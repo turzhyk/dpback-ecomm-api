@@ -144,16 +144,37 @@ public class UserService : IUserService
         )).ToList();
     }
 
-    public async Task<Guid> AddUserAddress(Guid userId, UserAdressCreateDto dto, CancellationToken cToken)
+    public async Task<Guid> AddUserAddress(Guid userId, UserAddressCreateDto dto, CancellationToken cToken)
     {
         var exists = await _repo.UserWithIdExists(userId, cToken);
         if (!exists)
             throw new KeyNotFoundException("user not found");
         var guid = Guid.NewGuid();
-        var userAdress = new UserAdress(guid, userId, dto.Country, dto.City, dto.Street,
+        var userAdress = new UserAddress(guid, userId, dto.Country, dto.City, dto.Street,
             dto.BuildingNumber, dto.ApartmentNumber, dto.PostalCode, dto.PhoneNumber, dto.Email,
             dto.Options);
-         await _repo.AddUserAdress(userAdress, cToken);
+         await _repo.AddUserAddress(userAdress, cToken);
          return guid;
+    }
+
+    public async Task ModifyUserAddress(Guid userId, Guid addressId, UserAddressModifyDto dto, CancellationToken cToken)
+    {
+        var userExists = await _repo.UserWithIdExists(userId, cToken);
+        var address = await _repo.GetAddressById(addressId, cToken);
+        if (!userExists || address is null)
+            throw new KeyNotFoundException("user or/and address not found");
+        
+        
+        address.Country = dto.Country ?? address.Country;
+        address.City = dto.City ?? address.City;
+        address.Street = dto.Street ?? address.Street;
+        address.BuildingNumber = dto.BuildingNumber ?? address.BuildingNumber;
+        address.ApartmentNumber = dto.ApartmentNumber ?? address.ApartmentNumber;
+        address.PostalCode = dto.PostalCode ?? address.PostalCode;
+        address.PhoneNumber = dto.PhoneNumber ?? address.PhoneNumber;
+        address.Email = dto.Email ?? address.Email;
+        address.Options = dto.Options ?? address.Options;
+        
+        await _repo.UpdateUserAddress(addressId, address, cToken);
     }
 }

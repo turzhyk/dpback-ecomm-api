@@ -9,5 +9,6 @@ public interface IUserService
     Task<UserDto> GetByEmail(string email, CancellationToken cToken);
     Task<UserDto> GetById(Guid id, CancellationToken cToken);
     Task<List<UserAddressResponseDto>> GetAddressesByUserId(Guid id, CancellationToken cToken);
-    Task<Guid> AddUserAddress(Guid userId, UserAdressCreateDto dto, CancellationToken cToken);
+    Task<Guid> AddUserAddress(Guid userId, UserAddressCreateDto dto, CancellationToken cToken);
+    Task ModifyUserAddress(Guid userId, Guid addressId, UserAddressModifyDto dto, CancellationToken cToken);
 }

@@ -101,7 +101,7 @@ public class UserServiceTests
     public async Task GetUserAddresses_ShouldReturnMappedAddresses()
     {
         var id = Guid.NewGuid();
-        List<UserAdress> addresses = new List<UserAdress>() { new UserAdress { Id = Guid.NewGuid() } };
+        List<UserAddress> addresses = new List<UserAddress>() { new UserAddress { Id = Guid.NewGuid() } };
 
         _mockRepository.Setup(x => x.UserWithIdExists(id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         _mockRepository.Setup(x =>
@@ -114,7 +114,7 @@ public class UserServiceTests
     [Fact]
     public async Task GetUserAddresses_ShouldReturnEmptyList_WhenNoAddressesFound()
     {
-        List<UserAdress> addresses = new List<UserAdress>();
+        List<UserAddress> addresses = new List<UserAddress>();
         _mockRepository.Setup(x => x.UserWithIdExists(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         _mockRepository.Setup(x => x.GetAdressesByUserId(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
@@ -141,10 +141,19 @@ public class UserServiceTests
                 x.UserWithIdExists(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         _mockRepository.Setup(x => 
-                x.AddUserAdress(It.IsAny<UserAdress>(), It.IsAny<CancellationToken>()));
-        var dto = new UserAdressCreateDto("Poland", "Poznan",
-            "Street", "1", "1", "60-000", "123123123",
-            "test@mail.com", "");
+                x.AddUserAddress(It.IsAny<UserAddress>(), It.IsAny<CancellationToken>()));
+        var dto = new UserAddressCreateDto
+        {
+            Country = "Poland",
+            City = "Poznan",
+            Street = "Street",
+            BuildingNumber = "1",
+            ApartmentNumber = "1",
+            PostalCode = "60-000",
+            PhoneNumber = "123123123",
+            Email = "test@mail.com",
+            Options = ""
+        };
         var result = await _service.AddUserAddress(Guid.NewGuid(), dto, CancellationToken.None);
         Assert.NotEqual(Guid.Empty, result);
     }

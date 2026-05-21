@@ -1,9 +1,8 @@
-﻿namespace DPBack.Infrastructure.Entities;
+﻿namespace DPBack.Domain.Models;
 
-
-public class UserAdressEntity
+public class UserAddress
 {
-    public UserAdressEntity(Guid id, Guid userId, string? country, string? city, string? street, string? buildingNumber, string? apartmentNumber, string? postalCode, string? phoneNumber, string? email, string? options)
+    public UserAddress(Guid id, Guid userId, string? country, string? city, string? street, string? buildingNumber, string? apartmentNumber, string? postalCode, string? phoneNumber, string? email, string? options)
     {
         Id = id;
         UserId = userId;
@@ -17,9 +16,9 @@ public class UserAdressEntity
         Email = email;
         Options = options;
     }
-
-    public Guid Id { get; set; }
+    public UserAddress(){}
   
+    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public string? Country { get; set; }
     public string? City { get; set; }

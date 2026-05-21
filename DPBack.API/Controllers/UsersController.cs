@@ -56,7 +56,7 @@ public class UsersController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("adresses")]
+    [HttpGet("addresses")]
     public async Task<ActionResult<List<UserAddressResponseDto>>> GetUserAddresses(CancellationToken cToken)
     {
         var userId = GetCurrentUserId();
@@ -65,7 +65,7 @@ public class UsersController : ControllerBase
     }
     [Authorize]
     [HttpPost("addresses")]
-    public async Task<ActionResult> AddUserAdress ([FromBody] UserAdressCreateDto request, CancellationToken cToken)
+    public async Task<ActionResult> AddUserAdress ([FromBody] UserAddressCreateDto request, CancellationToken cToken)
     {
         var userId = GetCurrentUserId();
 
@@ -74,8 +74,9 @@ public class UsersController : ControllerBase
     }
     [HttpPatch("addresses/{addressId}")]
     [Authorize]
-    public async Task<ActionResult> ChangeUserAddress(Guid addressId, [FromBody] UserAdressCreateDto request, CancellationToken cToken)
+    public async Task<ActionResult> ChangeUserAddress(Guid addressId, [FromBody] UserAddressCreateDto request, CancellationToken cToken)
     {
+        var userId = GetCurrentUserId();
         // Implement later
         return Ok();
     }

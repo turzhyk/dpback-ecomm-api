@@ -23,14 +23,19 @@ Clean Architecture with 5 layers:
 - **API** - controllers, middleware
 - **Tests** - well, unit-test
 
-## Getting started 🚧
-- Install Docker `https://www.docker.com/`
-- Clone this repo `git clone https://github.com/turzhyk/dpback-ecomm-api`
+## Getting started
+- Install Docker  
+`https://www.docker.com/`
 - Start Docker
-- In project root run `docker compose up`
-- Then run `dotnet ef database update --context orderstoredbcontext --startup-project .\DPBack.API\`
-- and `dotnet ef database update --context userstoredbcontext --startup-project .\DPBack.API\`
-- Run the API
+- Clone this repo  
+`git clone https://github.com/turzhyk/dpback-ecomm-api`
+- In project root run  
+`docker compose up`
+- Then  
+`cd ./DPBack.API/`  
+`dotnet run`
+
+__Swagger will be available at http://localhost:5030/swagger/index.html__
 ## Design Decisions
 - Strategy pattern for price calculators. Adding new product type requires only a new class implementing IPriceCalculator
 - PayU webhooke ("notify") signature verification via HMAC

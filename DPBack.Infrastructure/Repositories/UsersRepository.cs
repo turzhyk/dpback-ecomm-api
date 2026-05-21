@@ -3,6 +3,7 @@ using DPBack.Application.Abstractions;
 using DPBack.Domain.Models;
 using DPBack.Infrastructure.Contexts;
 using DPBack.Infrastructure.Entities;
+using DPBack.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPBack.Infrastructure.Repositories;
@@ -18,8 +19,7 @@ public class UsersRepository : IUsersRepository
 
     public async Task<bool> UserWithIdExists(Guid id, CancellationToken cToken)
     {
-        var user =await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, cToken);
-        return !(user is null);
+        return  await _context.Users.AnyAsync(x => x.Id == id, cToken);
     }
 
     public async Task<User?> GetByEmail(string email, CancellationToken cToken)
@@ -47,24 +47,55 @@ public class UsersRepository : IUsersRepository
         return user.Id;
     }
 
-    public async Task<List<UserAdress>> GetAdressesByUserId(Guid id, CancellationToken cToken)
+    public async Task<List<UserAddress>>  GetAdressesByUserId(Guid id, CancellationToken cToken)
     {
-        var entities = await _context.Adresses.Where(adress => adress.UserId == id).ToListAsync(cToken);
+        var entities = await _context.Adresses
+            .Where(address => address.UserId == id)
+            .ToListAsync(cToken);
         if (entities.Count == 0)
-            return new List<UserAdress>();
+            return new List<UserAddress>();
 
-        return entities.Select(entity => new UserAdress(entity.Id, entity.UserId, entity.Country, entity.City, entity.Street,
-            entity.BuildingNumber, entity.ApartmentNumber, entity.PostalCode, entity.PhoneNumber, entity.Email,
-            entity.Options)).ToList();
+        return entities.Select(entity => entity.ToModel()).ToList();
     }
 
-    public async Task AddUserAdress( UserAdress adress, CancellationToken cToken)
+    public async Task AddUserAddress( UserAddress address, CancellationToken cToken)
     {
-        var entity =  new UserAdressEntity(adress.Id, adress.UserId, adress.Country, adress.City, adress.Street,
-            adress.BuildingNumber, adress.ApartmentNumber, adress.PostalCode, adress.PhoneNumber, adress.Email,
-            adress.Options);
+        var entity =  new UserAdressEntity(address.Id, address.UserId, address.Country, address.City, address.Street,
+            address.BuildingNumber, address.ApartmentNumber, address.PostalCode, address.PhoneNumber, address.Email,
+            address.Options);
 
         await _context.Adresses.AddAsync(entity, cToken);
+        await _context.SaveChangesAsync(cToken);
+    }
+
+    public async Task<bool> AddressWithIdExists(Guid id, CancellationToken cToken)
+    {
+        return await _context.Adresses.AnyAsync(x => x.Id == id, cToken);
+    }
+
+    public async Task<UserAddress?> GetAddressById(Guid id, CancellationToken cToken)
+    {
+        var result = await _context.Adresses
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, cToken);
+        return result?.ToModel();
+    }
+
+    public async Task UpdateUserAddress(Guid addressId, UserAddress address, CancellationToken cToken)
+    {
+        var entity = await _context.Adresses
+            .FirstOrDefaultAsync(x => x.Id == addressId, cToken);
+        if (entity is null)
+            throw new KeyNotFoundException("address not found");
+        entity.Country = address.Country;
+        entity.City = address.City;
+        entity.Street = address.Street;
+        entity.BuildingNumber = address.BuildingNumber;
+        entity.ApartmentNumber = address.ApartmentNumber;
+        entity.PostalCode = address.PostalCode;
+        entity.PhoneNumber = address.PhoneNumber;
+        entity.Email = address.Email;
+        entity.Options = address.Options;
         await _context.SaveChangesAsync(cToken);
     }
 }

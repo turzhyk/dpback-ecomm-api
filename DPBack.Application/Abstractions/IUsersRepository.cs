@@ -10,6 +10,9 @@ public interface IUsersRepository
     Task<User?> GetByEmail(string email, CancellationToken cToken);
     Task<bool> UserWithIdExists(Guid id, CancellationToken cToken);
     Task<User?> GetById(Guid id, CancellationToken cToken);
-    Task<List<UserAdress>?> GetAdressesByUserId(Guid id, CancellationToken cToken);
-    Task AddUserAdress( UserAdress adress, CancellationToken cToken);
+    Task<List<UserAddress>> GetAdressesByUserId(Guid id, CancellationToken cToken);
+    Task AddUserAddress( UserAddress address, CancellationToken cToken);
+    Task<bool> AddressWithIdExists(Guid id, CancellationToken cToken);
+    Task<UserAddress?> GetAddressById(Guid id, CancellationToken cToken);
+    Task UpdateUserAddress(Guid addressId, UserAddress dto, CancellationToken cToken);
 }
