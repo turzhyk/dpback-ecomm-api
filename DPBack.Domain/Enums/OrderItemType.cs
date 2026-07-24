@@ -12,5 +12,6 @@ public enum OrderItemType
     bb,
     cc,
     aaa,
-    PhotoA4
+    PhotoA4, 
+    Tshirt
 }

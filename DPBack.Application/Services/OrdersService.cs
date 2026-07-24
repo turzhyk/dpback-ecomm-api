@@ -107,6 +107,7 @@ namespace DPBack.Application.Services
                 totalPrice += _priceService.Calculate(i);
             }
 
+            var paymentStatus = requestDto.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
             var (order, error) = Order.Create(
                 Guid.NewGuid(),
                 0,
@@ -118,12 +119,20 @@ namespace DPBack.Application.Services
                 DateTime.UtcNow,
                 false,
                 status: OrderStatus.New,
-                paymentStatus: OrderPaymentStatus.Waiting,
+                paymentStatus: paymentStatus,
                 null
             );
             await _repo.Create(order, cToken);
-            var paymentUrl = await _paymentService.CreatePayment(order.Id.ToString(), totalPrice);
-            return new CreateOrderResponseDto(order.Id, paymentUrl);
+            if (paymentStatus == OrderPaymentStatus.Paid)
+            {
+                return new CreateOrderResponseDto(order.Id);
+            }
+            else
+            {
+                var paymentUrl = await _paymentService.CreatePayment(order.Id.ToString(), totalPrice);
+                return new CreateOrderResponseDto(order.Id, paymentUrl);
+            }
+           
         }
 
         public async Task ChangeStatus(Guid orderId, string author, OrderStatus newStatus, CancellationToken cToken)

@@ -3,6 +3,7 @@ using DPBack.Application.Abstractions;
 using DPBack.Application.Options;
 using DPBack.Infrastructure.TokenProvider;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Protocols.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DPBack.API.Extensions;
@@ -13,6 +14,8 @@ public static class AuthenticationExtensions
 
     {
         var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
+        if (jwtOptions is null)
+            throw new InvalidConfigurationException("Jwt section is missing");
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters

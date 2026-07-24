@@ -33,7 +33,7 @@ public class OrderServiceTests
         var orderDto = new CreateOrderRequestDto("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
         {
             new OrderItemRequest(1, OrderItemType.Businesscard, new JsonElement())
-        });
+        }, false);
 
         _mockPaymentService.Setup(x =>
             x.CreatePayment(It.IsAny<string>(), It.IsAny<decimal>())).ReturnsAsync("link");

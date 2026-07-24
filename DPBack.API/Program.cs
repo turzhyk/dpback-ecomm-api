@@ -51,10 +51,14 @@ builder.Services.AddHttpClient<IPaymentService, PayUService>(client =>
     client.BaseAddress = new Uri("https://secure.snd.payu.com");
 });
 
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });
 var app = builder.Build();
 await app.SeedDBAsync(configuration);
 

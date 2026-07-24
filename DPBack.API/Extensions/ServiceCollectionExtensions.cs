@@ -31,11 +31,15 @@ public static class ServiceCollectionExtensions
         services.Configure<PhotoPricing>(
             configuration.GetSection("Pricing:Photo"));
         services.AddScoped<IPriceCalculator, PhotoCalculator>();
+        services.AddScoped<IPriceCalculator, TshirtCalculator>();
 
 
         services.AddScoped<PriceCalculatorFactory>();
 
         services.AddSingleton<IPaymentTokenProvider, PayUTokenProvider>();
+        
+        
+       
         return services;
     }
 }
