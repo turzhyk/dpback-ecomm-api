@@ -1,4 +1,5 @@
-﻿using DPBack.Domain.Models;
+﻿using DPBack.Domain.Enums;
+using DPBack.Domain.Models;
 using DPBack.Infrastructure.Entities;
 
 namespace DPBack.Infrastructure.Entities;

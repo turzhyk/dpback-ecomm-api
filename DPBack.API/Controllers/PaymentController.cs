@@ -3,6 +3,7 @@ using DPBack.Application.Contracts;
 using DPBack.Application.Features;
 using DPBack.Application.Abstractions;
 using DPBack.Application.Options;
+using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

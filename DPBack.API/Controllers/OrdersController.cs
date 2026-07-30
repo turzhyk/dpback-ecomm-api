@@ -43,10 +43,10 @@ namespace DPBack.API.Controllers
         }
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<ActionResult<OrderResponseDto>> GetOrderByIdAsync(Guid orderId, CancellationToken cToken)
+        public async Task<ActionResult<OrderResponseDto>> GetOrderByIdAsync(Guid id, CancellationToken cToken)
         {
             var userId = GetCurrentUserId();
-            var result = await _service.GetOrderById(userId,orderId, cToken);
+            var result = await _service.GetOrderById(userId, id, cToken);
             return Ok(result);
         }
         [HttpPut("{id}/assigned")]

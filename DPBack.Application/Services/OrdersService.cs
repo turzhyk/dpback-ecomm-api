@@ -2,6 +2,7 @@
 using DPBack.Application.Contracts;
 using DPBack.Application.Exceptions;
 using DPBack.Application.Extensions;
+using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using Microsoft.Extensions.Logging;
 
@@ -143,8 +144,8 @@ namespace DPBack.Application.Services
             _logger.LogInformation("Changing {orderId} order status from {oldStatus} to {newStatus} by {author}",
                 orderId, order.Status, newStatus, author);
 
-            if (order.AssignedTo != author)
-                throw new StatusChangeNotAllowedException();
+            // if (order.AssignedTo != author)
+            //     throw new StatusChangeNotAllowedException();
 
 
             if (AllowedTransitions[order.Status].Contains(newStatus))

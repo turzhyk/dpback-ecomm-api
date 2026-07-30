@@ -1,27 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using DPBack.Domain.Enums;
 
 namespace DPBack.Domain.Models
 {
-    public enum OrderStatus
-    {
-        New, // заказ создан
-        InProgress, // оператор работает
-        Produced, // продукция изготовлена
-        Packing, // упаковка
-        ReadyForShipping, // готов к отправке
-        InDelivery, // у курьера
-        Done, // доставлено
-        Cancelled // отменено
-    }
-
-    public enum OrderPaymentStatus
-    {
-        Waiting,
-        Paid,
-        Cancelled
-    }
+  
 
     public class Order
     {

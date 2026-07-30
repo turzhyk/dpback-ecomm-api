@@ -1,4 +1,6 @@
-﻿namespace DPBack.Domain.Models;
+﻿using DPBack.Domain.Enums;
+
+namespace DPBack.Domain.Models;
 
 public class OrderHistoryElement
 {
