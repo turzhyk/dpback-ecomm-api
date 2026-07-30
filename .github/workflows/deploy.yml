@@ -17,7 +17,7 @@ jobs:
           username: ${{ secrets.SERVER_USER}}
           key: ${{ secrets.SERVER_SSH_KEY }}
           
-          scripts: |
+          script: |
             whoami
             cd /opt/dpback/dpback-ecomm-api
             git pull origin main
