@@ -18,6 +18,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           
           scripts: |
+            whoami
             cd /opt/dpback/dpback-ecomm-api
             git pull origin main
             docker compose up -d --build
