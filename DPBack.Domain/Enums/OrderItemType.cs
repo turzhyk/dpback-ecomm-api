@@ -2,16 +2,9 @@
 
 public enum OrderItemType
 {
-    Businesscard,
-    Banner,
-    OpeningHoursSticker,
-    a,
-    b,
-    c,
-    aa,
-    bb,
-    cc,
-    aaa,
-    PhotoA4, 
-    Tshirt
+    Businesscard = 0,
+    Banner = 1,
+    OpeningHoursSticker = 2,
+    PhotoA4 = 3, 
+    Tshirt = 4
 }

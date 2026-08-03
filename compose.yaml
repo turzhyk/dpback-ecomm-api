@@ -30,12 +30,11 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+    env_file:
+        - .env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       DOTNET_ENVIRONMENT: Development
-      Jwt__Secret: ${JWT_SECRET}
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
       
       
 

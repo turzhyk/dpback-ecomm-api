@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IUsersRepository, UsersRepository>();
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+        services.AddScoped<IProductsService, ProductsService>();
 
         services.Configure<BusinesscardPricing>(
             configuration.GetSection("Pricing:Businesscard"));
