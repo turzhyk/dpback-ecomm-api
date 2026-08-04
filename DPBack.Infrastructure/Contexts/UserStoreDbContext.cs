@@ -11,4 +11,5 @@ public class UserStoreDbContext : DbContext
     }
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<UserAdressEntity> Adresses { get; set; }
+    public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
 }

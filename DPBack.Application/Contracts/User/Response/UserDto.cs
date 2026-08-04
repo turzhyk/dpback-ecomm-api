@@ -1,4 +1,5 @@
-﻿using DPBack.Domain.Enums;
+﻿using DPBack.Application.Contracts.User.Response;
+using DPBack.Domain.Enums;
 
 namespace DPBack.Application.Contracts;
 

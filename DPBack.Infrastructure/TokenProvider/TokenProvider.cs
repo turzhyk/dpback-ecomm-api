@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using DPBack.Domain.Models;
 using Microsoft.IdentityModel.Tokens;
@@ -41,5 +42,11 @@ public class TokenProvider : ITokenProvider
         var handler = new JsonWebTokenHandler();
         string token = handler.CreateToken(tokenDescriptor);
         return token;
+    }
+
+    public string CreateRefreshToken()
+    {
+        return Convert.ToBase64String(
+            RandomNumberGenerator.GetBytes(64));
     }
 }

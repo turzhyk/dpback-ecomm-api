@@ -1,31 +1,15 @@
-﻿namespace DPBack.Application.Contracts{
+﻿namespace DPBack.Application.Contracts.User.Response{
 
-    public class UserAddressResponseDto
-    {
-        public UserAddressResponseDto(Guid id,string country, string city, string street, string buildingNumber,
-            string apartmentNumber, string postalCode, string phoneNumber, string email, string options)
-        {
-            Id = id;
-            Country = country;
-            City = city;
-            Street = street;
-            BuildingNumber = buildingNumber;
-            ApartmentNumber = apartmentNumber;
-            PostalCode = postalCode;
-            PhoneNumber = phoneNumber;
-            Email = email;
-            Options = options;
-        }
-        public UserAddressResponseDto(){}
-        public Guid Id { get;  set; }
-        public string Country { get; private set; }
-        public string City { get; private set; }
-        public string Street { get; private set; }
-        public string BuildingNumber { get; private set; }
-        public string ApartmentNumber { get; private set; }
-        public string PostalCode { get; private set; }
-        public string PhoneNumber { get; private set; }
-        public string Email { get; private set; }
-        public string Options { get; private set; }
-    }
+    public record UserAddressResponseDto(
+        Guid Id,
+        string? Country,
+        string? City,
+        string? Street,
+        string? BuildingNumber,
+        string? ApartmentNumber,
+        string? PostalCode,
+        string? PhoneNumber,
+        string? Email,
+        string? Options
+    );
 }

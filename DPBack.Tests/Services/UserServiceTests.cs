@@ -32,7 +32,7 @@ public class UserServiceTests
         var id = Guid.NewGuid();
         var user = new User { Id = id };
 
-        _mockRepository.Setup(r => r.GetById(id, It.IsAny<CancellationToken>())).ReturnsAsync(user);
+        _mockRepository.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(user);
 
         var result = await _service.GetById(id, CancellationToken.None);
         Assert.NotNull(result);
@@ -43,7 +43,7 @@ public class UserServiceTests
     public async Task GetById_ShouldThrow_WhenUserNotFound()
     {
         var id = Guid.NewGuid();
-        _mockRepository.Setup(x => x.GetById(id, It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
+        _mockRepository.Setup(x => x.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.GetById(id, CancellationToken.None));
     }
@@ -54,7 +54,7 @@ public class UserServiceTests
         var email = "test@mail.com";
         var user = new User { Email = email };
 
-        _mockRepository.Setup(r => r.GetByEmail(email, It.IsAny<CancellationToken>())).ReturnsAsync(user);
+        _mockRepository.Setup(r => r.GetByEmailAsync(email, It.IsAny<CancellationToken>())).ReturnsAsync(user);
 
         var result = await _service.GetByEmail(email, CancellationToken.None);
         Assert.NotNull(result);
@@ -67,7 +67,7 @@ public class UserServiceTests
         var email = "notfound@mail.com";
 
         _mockRepository
-            .Setup(r => r.GetByEmail(email, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetByEmailAsync(email, It.IsAny<CancellationToken>()))
             .ReturnsAsync((User)null);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
@@ -103,9 +103,9 @@ public class UserServiceTests
         var id = Guid.NewGuid();
         List<UserAddress> addresses = new List<UserAddress>() { new UserAddress { Id = Guid.NewGuid() } };
 
-        _mockRepository.Setup(x => x.UserWithIdExists(id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _mockRepository.Setup(x => x.UserWithIdExistsAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         _mockRepository.Setup(x =>
-            x.GetAdressesByUserId(id, It.IsAny<CancellationToken>())).ReturnsAsync(addresses);
+            x.GetAddressesByUserIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(addresses);
 
         var result = await _service.GetAddressesByUserId(id, CancellationToken.None);
         Assert.Equal(result[0].Id, addresses[0].Id);
@@ -115,9 +115,9 @@ public class UserServiceTests
     public async Task GetUserAddresses_ShouldReturnEmptyList_WhenNoAddressesFound()
     {
         List<UserAddress> addresses = new List<UserAddress>();
-        _mockRepository.Setup(x => x.UserWithIdExists(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        _mockRepository.Setup(x => x.UserWithIdExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        _mockRepository.Setup(x => x.GetAdressesByUserId(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        _mockRepository.Setup(x => x.GetAddressesByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(addresses);
         var result = await _service.GetAddressesByUserId(Guid.NewGuid(), CancellationToken.None);
         Assert.Empty(result);
@@ -127,7 +127,7 @@ public class UserServiceTests
     public async Task GetUserAddresses_ShouldThrow_WhenNoUserFound()
     {
         _mockRepository.Setup(x => 
-                x.UserWithIdExists(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                x.UserWithIdExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
@@ -138,10 +138,10 @@ public class UserServiceTests
     public async Task AddUserAddress_ShouldReturnGuid()
     {
         _mockRepository.Setup(x => 
-                x.UserWithIdExists(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                x.UserWithIdExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         _mockRepository.Setup(x => 
-                x.AddUserAddress(It.IsAny<UserAddress>(), It.IsAny<CancellationToken>()));
+                x.AddUserAddressAsync(It.IsAny<UserAddress>(), It.IsAny<CancellationToken>()));
         var dto = new UserAddressCreateDto
         {
             Country = "Poland",
@@ -161,7 +161,7 @@ public class UserServiceTests
     public async Task AddUserAddress_ShouldThrow_WhenNoUserFound()
     {
         _mockRepository.Setup(x => 
-                x.UserWithIdExists(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                x.UserWithIdExistsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>

@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using DPBack.Application.Contracts;
 using DPBack.Application.Abstractions;
+using DPBack.Application.Contracts.User.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,8 +21,10 @@ public class UsersController : ControllerBase
         {
             throw new UnauthorizedAccessException("No active user found");
         }
+
         return Guid.Parse(userId);
     }
+
     public UsersController(IUserService service)
     {
         _service = service;
@@ -35,7 +38,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<string>> LoginUser([FromBody] UserLoginRequest request, CancellationToken cToken)
+    public async Task<ActionResult<UserLoginRespose>> LoginUser([FromBody] UserLoginRequest request, CancellationToken cToken)
     {
         try
         {
@@ -46,6 +49,15 @@ public class UsersController : ControllerBase
         {
             return Unauthorized(e.Message);
         }
+    }
+
+    [Authorize]
+    [HttpGet("refresh")]
+    public async Task<ActionResult<UserLoginRespose>> RefreshToken(string oldRefreshToken, CancellationToken cToken)
+    {
+        var userId = GetCurrentUserId();
+        var result = await _service.RefreshToken(userId, oldRefreshToken, cToken);
+        return Ok(result);
     }
     [Authorize]
     [HttpGet("{id}")]
