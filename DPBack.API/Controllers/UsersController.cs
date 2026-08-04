@@ -50,13 +50,11 @@ public class UsersController : ControllerBase
             return Unauthorized(e.Message);
         }
     }
-
-    [Authorize]
+    
     [HttpGet("refresh")]
     public async Task<ActionResult<UserLoginRespose>> RefreshToken(string oldRefreshToken, CancellationToken cToken)
     {
-        var userId = GetCurrentUserId();
-        var result = await _service.RefreshToken(userId, oldRefreshToken, cToken);
+        var result = await _service.RefreshToken(oldRefreshToken, cToken);
         return Ok(result);
     }
     [Authorize]

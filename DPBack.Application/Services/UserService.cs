@@ -71,14 +71,9 @@ public class UserService : IUserService
         return new UserLoginRespose(token, refreshToken);
     }
 
-    public async Task<UserLoginRespose> RefreshToken(Guid userId, string oldRefreshToken, CancellationToken cToken)
+    public async Task<UserLoginRespose> RefreshToken(string oldRefreshToken, CancellationToken cToken)
     {
-        _logger.LogInformation($"Refresh user {userId}");
-        var user = await _repo.GetByIdAsync(userId, cToken);
-        if(user == null)
-            throw new UnauthorizedAccessException("Invalid refresh token");
         var refresh = await _repo.GetRefreshTokenByTokenAsync(oldRefreshToken, cToken);
-
         if (refresh == null ||
             refresh.IsRevoked ||
             refresh.ExpiresAt < DateTime.UtcNow)
@@ -86,20 +81,24 @@ public class UserService : IUserService
             throw new UnauthorizedAccessException("Invalid refresh token");
         }
 
-        if (refresh.UserId != userId)
-            throw new UnauthorizedAccessException();
-        
+        _logger.LogInformation($"Refresh user {refresh.UserId}");
+        var user = await _repo.GetByIdAsync(refresh.UserId, cToken);
+        if (user == null)
+            throw new UnauthorizedAccessException("Invalid refresh token");
+
+
         var newToken = _tokenProvider.Create(user);
         var newRefreshToken = _tokenProvider.CreateRefreshToken();
-        
-        
+
+
         await _repo.SetTokenRevokedAsync(oldRefreshToken, cToken);
         await _repo.AddRefreshTokenAsync(user, newRefreshToken, cToken);
-        
+
         var response = new UserLoginRespose(newToken, newRefreshToken);
-        
+
         return response;
     }
+
     public async Task<UserDto> GetByEmail(string email, CancellationToken cToken)
     {
         // FLUENTVALIDATION email validaion
@@ -127,6 +126,7 @@ public class UserService : IUserService
         };
         return response;
     }
+
     public async Task<UserDto> GetById(Guid id, CancellationToken cToken)
     {
         var user = await _repo.GetByIdAsync(id, cToken);
@@ -159,7 +159,7 @@ public class UserService : IUserService
         var exists = await _repo.UserWithIdExistsAsync(id, cToken);
         if (!exists)
             throw new KeyNotFoundException("user not found");
-        
+
         var entities = await _repo.GetAddressesByUserIdAsync(id, cToken);
 
         return entities.Select(a => new UserAddressResponseDto
@@ -186,8 +186,8 @@ public class UserService : IUserService
         var userAdress = new UserAddress(guid, userId, dto.Country, dto.City, dto.Street,
             dto.BuildingNumber, dto.ApartmentNumber, dto.PostalCode, dto.PhoneNumber, dto.Email,
             dto.Options);
-         await _repo.AddUserAddressAsync(userAdress, cToken);
-         return guid;
+        await _repo.AddUserAddressAsync(userAdress, cToken);
+        return guid;
     }
 
     public async Task ModifyUserAddress(Guid userId, Guid addressId, UserAddressModifyDto dto, CancellationToken cToken)
@@ -196,8 +196,8 @@ public class UserService : IUserService
         var address = await _repo.GetAddressByIdAsync(addressId, cToken);
         if (!userExists || address is null)
             throw new KeyNotFoundException("user or/and address not found");
-        
-        
+
+
         address.Country = dto.Country ?? address.Country;
         address.City = dto.City ?? address.City;
         address.Street = dto.Street ?? address.Street;
@@ -207,7 +207,7 @@ public class UserService : IUserService
         address.PhoneNumber = dto.PhoneNumber ?? address.PhoneNumber;
         address.Email = dto.Email ?? address.Email;
         address.Options = dto.Options ?? address.Options;
-        
+
         await _repo.UpdateUserAddressAsync(addressId, address, cToken);
     }
 }

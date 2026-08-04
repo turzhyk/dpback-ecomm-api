@@ -100,7 +100,7 @@ public class UsersRepository : IUsersRepository
     }
 
 
-    public async Task AddRefreshTokenAsync(User user, string token,  CancellationToken cToken)
+    public async Task AddRefreshTokenAsync(User user, string token, CancellationToken cToken)
     {
         var tokenEntity = new RefreshTokenEntity
             { Id = Guid.NewGuid(), UserId = user.Id, Token = token, ExpiresAt = DateTime.UtcNow.AddDays(30) };
@@ -114,6 +114,21 @@ public class UsersRepository : IUsersRepository
             return null;
         return new RefreshToken
             { Id = entity.Id, Token = entity.Token, ExpiresAt = entity.ExpiresAt, IsRevoked = entity.IsRevoked };
+    }
+
+    public async Task<(RefreshToken?, User?)> GetRefreshTokenWithUserByTokenAsync(string token,
+        CancellationToken cToken)
+    {
+        var tokenEntity = await _context.RefreshTokens.Include(u => u.User)
+            .FirstOrDefaultAsync(x => x.Token == token, cToken);
+        if (tokenEntity == null)
+            return (null, null);
+        var userEntity = tokenEntity.User;
+        return (new RefreshToken
+        {
+            Id = tokenEntity.Id, Token = tokenEntity.Token, ExpiresAt = tokenEntity.ExpiresAt,
+            IsRevoked = tokenEntity.IsRevoked
+        }, userEntity.ToModel());
     }
 
     public async Task SetTokenRevokedAsync(string token, CancellationToken cToken)

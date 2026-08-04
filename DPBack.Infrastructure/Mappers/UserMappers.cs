@@ -5,6 +5,10 @@ namespace DPBack.Infrastructure.Mappers;
 
 public static class UserMappers
 {
+    public static User ToModel(this UserEntity e)
+    {
+        return new User(e.Id, e.Login, e.PasswordHash, e.Email, e.Role, e.CreatedAt);
+    }
     public static UserAddress ToModel(this UserAdressEntity e)
     {
         return new UserAddress(e.Id, e.UserId, e.Country, e.City, e.Street, e.BuildingNumber, e.ApartmentNumber,
