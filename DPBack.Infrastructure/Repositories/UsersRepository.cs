@@ -113,7 +113,7 @@ public class UsersRepository : IUsersRepository
         if (entity == null)
             return null;
         return new RefreshToken
-            { Id = entity.Id, Token = entity.Token, ExpiresAt = entity.ExpiresAt, IsRevoked = entity.IsRevoked };
+            { Id = entity.Id,UserId = entity.UserId, Token = entity.Token, ExpiresAt = entity.ExpiresAt, IsRevoked = entity.IsRevoked };
     }
 
     public async Task<(RefreshToken?, User?)> GetRefreshTokenWithUserByTokenAsync(string token,

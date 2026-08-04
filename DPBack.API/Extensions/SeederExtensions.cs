@@ -12,12 +12,14 @@ public static class SeederExtensions
     {
         using (var scope = app.Services.CreateScope())
         {
+            Console.WriteLine("START MIGRATION");
             var orderDb = scope.ServiceProvider.GetRequiredService<OrderStoreDbContext>();
             await orderDb.Database.MigrateAsync();
             var userDb = scope.ServiceProvider.GetRequiredService<UserStoreDbContext>();
             await userDb.Database.MigrateAsync();
             var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
             await UserSeeder.SeedAsync(userDb, passwordHasher, configuration);
+            Console.WriteLine("MIGRATION DONE");
         }
     }
 }

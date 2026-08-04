@@ -78,10 +78,11 @@ public class UserService : IUserService
             refresh.IsRevoked ||
             refresh.ExpiresAt < DateTime.UtcNow)
         {
-            throw new UnauthorizedAccessException("Invalid refresh token");
+            throw new UnauthorizedAccessException($"invalid refresh token or revoked {refresh}");
         }
 
         _logger.LogInformation($"Refresh user {refresh.UserId}");
+        
         var user = await _repo.GetByIdAsync(refresh.UserId, cToken);
         if (user == null)
             throw new UnauthorizedAccessException("Invalid refresh token");
