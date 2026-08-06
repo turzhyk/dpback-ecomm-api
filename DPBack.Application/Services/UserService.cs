@@ -94,6 +94,7 @@ public class UserService : IUserService
 
         await _repo.SetTokenRevokedAsync(oldRefreshToken, cToken);
         await _repo.AddRefreshTokenAsync(user, newRefreshToken, cToken);
+        await _repo.SaveChangesAsync(cToken);
 
         var response = new UserLoginRespose(newToken, newRefreshToken);
 
