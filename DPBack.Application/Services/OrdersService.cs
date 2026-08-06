@@ -1,5 +1,6 @@
 ﻿using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts;
+using DPBack.Application.Contracts.Customers;
 using DPBack.Application.Exceptions;
 using DPBack.Application.Extensions;
 using DPBack.Domain.Enums;
@@ -196,6 +197,21 @@ namespace DPBack.Application.Services
                 }, cToken);
         }
 
+        public async Task CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken)
+        {
+            var customer = new Customer
+                { Id = Guid.NewGuid(), Phone = request.Phone, Email = request.Email, UserId = Guid.Empty };
+            try
+            {
+                await _repo.CreateCustomerAsync(customer, cToken);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
         public async Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList()
         {
             return null;

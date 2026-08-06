@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DPBack.API.Controllers;
 
 [ApiController]
-[Route("api/users")]
+[Route("users")]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _service;

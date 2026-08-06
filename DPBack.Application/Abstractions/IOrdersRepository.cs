@@ -20,5 +20,8 @@ namespace DPBack.Application.Abstractions
             Guid orderId,
             string author,
             OrderHistoryElement historyElement, CancellationToken cToken);
+
+        Task CreateCustomerAsync(Customer customer, CancellationToken cToken);
+        Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken);
     }
 }

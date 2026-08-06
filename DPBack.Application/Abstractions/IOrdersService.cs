@@ -1,6 +1,7 @@
 ﻿
 
 using DPBack.Application.Contracts;
+using DPBack.Application.Contracts.Customers;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 
@@ -19,5 +20,7 @@ namespace DPBack.Application.Abstractions
         Task ChangeStatus(Guid orderId, string author, OrderStatus newStatus, CancellationToken cToken);
 
         Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList();
+
+        Task CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken);
     }
 }

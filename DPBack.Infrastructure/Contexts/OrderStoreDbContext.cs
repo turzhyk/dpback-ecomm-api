@@ -16,6 +16,8 @@ namespace DPBack.Infrastructure.Contexts
         public DbSet<OrderHistoryElementEntity> OrderStatusHistories { get; set; }
         
         public DbSet<DeliveryTypeEntity> DeliveryOptions { get; set; }
+        public DbSet<CustomerEntity> Customers { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasSequence<int>("OrderNumbers")
@@ -25,6 +27,7 @@ namespace DPBack.Infrastructure.Contexts
             modelBuilder.Entity<OrderEntity>()
                 .Property(o => o.OrderNumber)
                 .HasDefaultValueSql("nextval('\"OrderNumbers\"')");
+            modelBuilder.Entity<CustomerEntity>().HasIndex(x => x.Phone).IsUnique();
         }
     }
 }

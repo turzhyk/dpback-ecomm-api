@@ -54,16 +54,6 @@ namespace DPBack.Domain.Models
         public List<OrderHistoryElement> History { get; set; }
             = new();
 
-        public void ChangeStatus(string status, string author)
-        {
-            // History.Add(new OrderHistoryElement(
-            //     status,
-            //     author,
-            //     DateTime.UtcNow,
-            //     
-            // ));
-        }
-
         public static (Order Order, string Error) Create(Guid id, int number, string description, decimal price,Guid customerId,
             List<OrderItem> items, string assignedTo,
             DateTime createdAt, bool suspended, OrderStatus status, OrderPaymentStatus paymentStatus,

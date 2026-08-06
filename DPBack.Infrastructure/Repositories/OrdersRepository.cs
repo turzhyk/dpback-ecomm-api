@@ -3,6 +3,7 @@ using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using DPBack.Infrastructure.Contexts;
 using DPBack.Infrastructure.Entities;
+using DPBack.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPBack.Infrastructure.Repositories
@@ -225,7 +226,20 @@ namespace DPBack.Infrastructure.Repositories
                     .SetProperty(o => o.AssignedTo, o => assignedTo), cToken);
             return id;
         }
+        public async Task CreateCustomerAsync(Customer customer, CancellationToken cToken)
+        {
+            var entity = customer.ToEntity();
+            await _context.Customers.AddAsync(entity, cToken);
+            await _context.SaveChangesAsync(cToken);
+        }
 
+        public async Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
+        {
+            var entity =await _context.Customers.FirstOrDefaultAsync(x => x.Phone == phone, cToken);
+            if (entity is null)
+                return null;
+            return entity.ToModel();
+        }
         public async Task<Guid> Delete(Guid id, CancellationToken cToken)
         {
             await _context.Orders

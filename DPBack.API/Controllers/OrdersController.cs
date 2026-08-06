@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DPBack.API.Controllers
 {
     [ApiController]
-    [Route("api/orders")]
+    [Route("orders")]
     public class OrdersController : ControllerBase
     {
         private readonly IOrdersService _service;
