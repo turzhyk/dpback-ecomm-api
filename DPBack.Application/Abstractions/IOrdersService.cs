@@ -21,6 +21,7 @@ namespace DPBack.Application.Abstractions
 
         Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList();
 
-        Task CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken);
+        Task<Guid> CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken);
+        Task<CustomersResponseDto> GetAllCustomers(CancellationToken cToken);
     }
 }

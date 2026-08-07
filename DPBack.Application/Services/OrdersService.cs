@@ -35,7 +35,7 @@ namespace DPBack.Application.Services
         private readonly IPaymentService _paymentService;
         private readonly IPriceCalcService _priceService;
         private readonly ILogger<OrdersService> _logger;
-        
+
 
         public OrdersService(IOrdersRepository ordersRepo, IPaymentService paymentService,
             IPriceCalcService priceCalcService
@@ -88,7 +88,7 @@ namespace DPBack.Application.Services
             var order = await _repo.GetWithId(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
-            
+
             return order.ToDto();
         }
 
@@ -134,7 +134,6 @@ namespace DPBack.Application.Services
                 var paymentUrl = await _paymentService.CreatePayment(order.Id.ToString(), totalPrice);
                 return new CreateOrderResponseDto(order.Id, paymentUrl);
             }
-           
         }
 
         public async Task ChangeStatus(Guid orderId, string author, OrderStatus newStatus, CancellationToken cToken)
@@ -197,21 +196,24 @@ namespace DPBack.Application.Services
                 }, cToken);
         }
 
-        public async Task CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken)
+        public async Task<Guid> CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken)
         {
             var customer = new Customer
                 { Id = Guid.NewGuid(), Phone = request.Phone, Email = request.Email, UserId = Guid.Empty };
-            try
-            {
-                await _repo.CreateCustomerAsync(customer, cToken);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+
+            var result = await _repo.CreateCustomerAsync(customer, cToken);
+            return result;
         }
-        
+
+        public async Task<CustomersResponseDto> GetAllCustomers(CancellationToken cToken)
+        {
+            var customers = await _repo.GetAllCustomersAsync(cToken);
+            var result =
+                new CustomersResponseDto(customers.Select(x => new CustomerResponseDto(x.Id, x.Name, x.Phone, x.Email))
+                    .ToList());
+            return result;
+        }
+
         public async Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList()
         {
             return null;

@@ -226,20 +226,36 @@ namespace DPBack.Infrastructure.Repositories
                     .SetProperty(o => o.AssignedTo, o => assignedTo), cToken);
             return id;
         }
-        public async Task CreateCustomerAsync(Customer customer, CancellationToken cToken)
+
+        public async Task<Guid> CreateCustomerAsync(Customer customer, CancellationToken cToken)
         {
             var entity = customer.ToEntity();
-            await _context.Customers.AddAsync(entity, cToken);
-            await _context.SaveChangesAsync(cToken);
+            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(x => x.Phone == entity.Phone);
+            if (existingCustomer != null)
+                return existingCustomer.Id;
+            else
+            {
+                await _context.Customers.AddAsync(entity, cToken);
+                await _context.SaveChangesAsync(cToken);
+                return entity.Id;
+            }
         }
 
         public async Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
         {
-            var entity =await _context.Customers.FirstOrDefaultAsync(x => x.Phone == phone, cToken);
+            var entity = await _context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Phone == phone, cToken);
             if (entity is null)
                 return null;
             return entity.ToModel();
         }
+
+        public async Task<List<Customer>> GetAllCustomersAsync(CancellationToken cToken)
+        {
+            var entities = await _context.Customers.AsNoTracking().ToListAsync(cToken);
+            var result = entities.Select(x => x.ToModel()).ToList();
+            return result;
+        }
+
         public async Task<Guid> Delete(Guid id, CancellationToken cToken)
         {
             await _context.Orders

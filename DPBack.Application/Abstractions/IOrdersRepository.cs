@@ -21,7 +21,8 @@ namespace DPBack.Application.Abstractions
             string author,
             OrderHistoryElement historyElement, CancellationToken cToken);
 
-        Task CreateCustomerAsync(Customer customer, CancellationToken cToken);
+        Task<Guid> CreateCustomerAsync(Customer customer, CancellationToken cToken);
+        Task<List<Customer>> GetAllCustomersAsync(CancellationToken cancellationToken);
         Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken);
     }
 }
