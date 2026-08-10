@@ -23,5 +23,6 @@ namespace DPBack.Application.Abstractions
 
         Task<Guid> CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken);
         Task<CustomersResponseDto> GetAllCustomers(CancellationToken cToken);
+        Task<CustomerResponseDto?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken);
     }
 }

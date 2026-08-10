@@ -34,7 +34,7 @@ public class TokenProvider : ITokenProvider
                 new Claim(ClaimTypes.Role, user.Role.ToString())
             ]),
 
-            Expires = DateTime.UtcNow.AddHours(_options.LifetimeInHours),
+            Expires = DateTime.UtcNow.AddMinutes(_options.TokenLifetimeInMinutes),
             SigningCredentials = credentials,
             Issuer = _options.Issuer,
             Audience = _options.Audience,

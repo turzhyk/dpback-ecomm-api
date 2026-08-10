@@ -74,11 +74,20 @@ public class UserService : IUserService
     public async Task<UserLoginRespose> RefreshToken(string oldRefreshToken, CancellationToken cToken)
     {
         var refresh = await _repo.GetRefreshTokenByTokenAsync(oldRefreshToken, cToken);
-        if (refresh == null ||
-            refresh.IsRevoked ||
-            refresh.ExpiresAt < DateTime.UtcNow)
+        if (refresh == null)
         {
-            throw new UnauthorizedAccessException($"invalid refresh token or revoked {refresh}");
+            throw new UnauthorizedAccessException("Refresh token not found");
+        }
+
+        if (refresh.IsRevoked)
+        {
+            // throw new UnauthorizedAccessException("Refresh token is revoked");
+        }
+
+        if (refresh.ExpiresAt < DateTime.UtcNow)
+        {
+            throw new UnauthorizedAccessException(
+                $"Refresh token expired. ExpiresAt: {refresh.ExpiresAt}, Now: {DateTime.UtcNow}");
         }
 
         _logger.LogInformation($"Refresh user {refresh.UserId}");

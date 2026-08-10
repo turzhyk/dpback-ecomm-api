@@ -214,6 +214,14 @@ namespace DPBack.Application.Services
             return result;
         }
 
+        public async Task<CustomerResponseDto?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
+        {
+            var result = await _repo.GetCustomerByPhoneAsync(phone, cToken);
+            if (result is null)
+                return null;
+            return new CustomerResponseDto(result.Id, result.Name, result.Phone, result.Email);
+        }
+
         public async Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList()
         {
             return null;

@@ -18,7 +18,7 @@ public class CustomerController:ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> Create([FromBody] CustomerCreateRequest request, CancellationToken cToken)
     {
-        var result = _ordersService.CreateCustomerAsync(request, cToken);
+        var result = await _ordersService.CreateCustomerAsync(request, cToken);
         return Ok(result);
     }
 
@@ -27,5 +27,13 @@ public class CustomerController:ControllerBase
     public async Task<ActionResult<CustomersResponseDto>> GetAll(CancellationToken cToken)
     {
         return Ok();
+    }
+
+    [Authorize]
+    [HttpGet("/by-phone/{phone}")]
+    public async Task<ActionResult<CustomerResponseDto?>> GetByPhone(string phone, CancellationToken cToken)
+    {
+        var result = await _ordersService.GetCustomerByPhoneAsync(phone, cToken);
+        return Ok(result);
     }
 }

@@ -50,7 +50,7 @@ public class UsersController : ControllerBase
             return Unauthorized(e.Message);
         }
     }
-    
+    [AllowAnonymous]
     [HttpGet("refresh")]
     public async Task<ActionResult<UserLoginRespose>> RefreshToken(string oldRefreshToken, CancellationToken cToken)
     {
