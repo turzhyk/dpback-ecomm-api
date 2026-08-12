@@ -19,6 +19,7 @@ public static class SeederExtensions
             await userDb.Database.MigrateAsync();
             var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
             await UserSeeder.SeedAsync(userDb, passwordHasher, configuration);
+            await CustomerSeeder.SeedAsync(orderDb);
             Console.WriteLine("MIGRATION DONE");
         }
     }

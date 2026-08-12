@@ -30,7 +30,7 @@ public class CustomerController:ControllerBase
     }
 
     [Authorize]
-    [HttpGet("/by-phone/{phone}")]
+    [HttpGet("by-phone/{phone}")]
     public async Task<ActionResult<CustomerResponseDto?>> GetByPhone(string phone, CancellationToken cToken)
     {
         var result = await _ordersService.GetCustomerByPhoneAsync(phone, cToken);
