@@ -196,13 +196,14 @@ namespace DPBack.Application.Services
                 }, cToken);
         }
 
-        public async Task<Guid> CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken)
+        public async Task<CustomerResponseDto> CreateCustomerAsync(CustomerCreateRequest request,
+            CancellationToken cToken)
         {
             var customer = new Customer
-                { Id = Guid.NewGuid(), Phone = request.Phone, Email = request.Email, UserId = Guid.Empty };
+                { Id = Guid.NewGuid(),Name = request.Name, Phone = request.Phone, Email = request.Email, UserId = Guid.Empty };
 
             var result = await _repo.CreateCustomerAsync(customer, cToken);
-            return result;
+            return new CustomerResponseDto(customer.Id, customer.Name, customer.Phone, customer.Email);
         }
 
         public async Task<CustomersResponseDto> GetAllCustomers(CancellationToken cToken)
