@@ -8,9 +8,9 @@ namespace DPBack.Application.Pricing.Calculators;
 public class TshirtCalculator:IPriceCalculator
 {
     public OrderItemType Type => OrderItemType.Tshirt;
-    public decimal Calculate(JsonElement configJson)
+    public decimal Calculate(ProductConfig abstractConfig)
     {
         return 45m;
-        var config = JsonSerializer.Deserialize<TshirtConfig>(configJson.GetRawText());
+       
     }
 }

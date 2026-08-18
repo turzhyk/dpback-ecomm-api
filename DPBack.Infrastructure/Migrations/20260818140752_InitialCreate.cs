@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -7,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DPBack.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class nitialreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,6 +14,21 @@ namespace DPBack.Infrastructure.Migrations
             migrationBuilder.CreateSequence<int>(
                 name: "OrderNumbers",
                 startValue: 10001L);
+
+            migrationBuilder.CreateTable(
+                name: "Customers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customers", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "DeliveryOptions",
@@ -58,7 +72,7 @@ namespace DPBack.Infrastructure.Migrations
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     PricePerUnit = table.Column<decimal>(type: "numeric", nullable: false),
-                    Options = table.Column<JsonElement>(type: "jsonb", nullable: false),
+                    Options = table.Column<string>(type: "text", nullable: true),
                     OrderId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -94,6 +108,12 @@ namespace DPBack.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Customers_Phone",
+                table: "Customers",
+                column: "Phone",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
                 table: "OrderItems",
                 column: "OrderId");
@@ -107,6 +127,9 @@ namespace DPBack.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Customers");
+
             migrationBuilder.DropTable(
                 name: "DeliveryOptions");
 

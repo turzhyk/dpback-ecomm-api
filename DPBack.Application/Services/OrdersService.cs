@@ -3,6 +3,7 @@ using DPBack.Application.Contracts;
 using DPBack.Application.Contracts.Customers;
 using DPBack.Application.Exceptions;
 using DPBack.Application.Extensions;
+using DPBack.Application.Mappers;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using Microsoft.Extensions.Logging;
@@ -35,16 +36,18 @@ namespace DPBack.Application.Services
         private readonly IPaymentService _paymentService;
         private readonly IPriceCalcService _priceService;
         private readonly ILogger<OrdersService> _logger;
+        private readonly ProductConfigMapperFactory _mapper;
 
 
         public OrdersService(IOrdersRepository ordersRepo, IPaymentService paymentService,
             IPriceCalcService priceCalcService
-            , ILogger<OrdersService> logger)
+            , ILogger<OrdersService> logger, ProductConfigMapperFactory mapper)
         {
             _repo = ordersRepo;
             _paymentService = paymentService;
             _priceService = priceCalcService;
             _logger = logger;
+            _mapper = mapper;
         }
 
 
@@ -101,14 +104,13 @@ namespace DPBack.Application.Services
                 Id = Guid.NewGuid(),
                 Quantity = i.Quantity,
                 Type = i.Type,
-                Options = i.Options,
+                Options = _mapper.Map(i.Type, i.Options),
             }).ToList();
             decimal totalPrice = 0;
             foreach (var i in requestDto.Items)
             {
                 totalPrice += _priceService.Calculate(i);
             }
-
             var paymentStatus = requestDto.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
             var (order, error) = Order.Create(
                 Guid.NewGuid(),

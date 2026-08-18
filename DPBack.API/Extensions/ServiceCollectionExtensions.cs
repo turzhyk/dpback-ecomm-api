@@ -1,4 +1,6 @@
 ﻿using DPBack.Application.Abstractions;
+using DPBack.Application.Mappers;
+using DPBack.Application.Mappers.Config;
 using DPBack.Application.Options.Pricing;
 using DPBack.Application.Pricing;
 using DPBack.Application.Pricing.Calculators;
@@ -29,13 +31,14 @@ public static class ServiceCollectionExtensions
         services.Configure<OpeningHoursStickerPricing>(
             configuration.GetSection("Pricing:WindowStickers:OpeningHours"));
         services.AddScoped<IPriceCalculator, OpeningHoursStickerCalculator>();
-        services.Configure<PhotoPricing>(
-            configuration.GetSection("Pricing:Photo"));
-        services.AddScoped<IPriceCalculator, PhotoCalculator>();
+        
         services.AddScoped<IPriceCalculator, TshirtCalculator>();
-
+        
+        //Config
+        services.AddScoped<IProductConfigMapper, BusinesscardsConfigMapper>();
 
         services.AddScoped<PriceCalculatorFactory>();
+        services.AddScoped<ProductConfigMapperFactory>();
 
         services.AddSingleton<IPaymentTokenProvider, PayUTokenProvider>();
         

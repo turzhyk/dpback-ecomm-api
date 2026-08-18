@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using DPBack.API.Extensions;
 using DPBack.API.Middleware;
@@ -59,6 +60,10 @@ builder.Services
             new JsonStringEnumConverter()
         );
     });
+builder.Services.AddSingleton(new JsonSerializerOptions
+{
+    PropertyNameCaseInsensitive = true
+});
 var app = builder.Build();
 await app.SeedDBAsync(configuration);
 

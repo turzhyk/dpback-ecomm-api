@@ -19,12 +19,12 @@ public class BusinesscardCalculator : IPriceCalculator
         _pricing = pricing.Value;
     }
 
-    public decimal Calculate(JsonElement configJson)
+    public decimal Calculate(ProductConfig abstractConfig)
     {
-        Console.WriteLine(configJson);
-        var config = JsonSerializer.Deserialize<BusinesscardConfig>(configJson.GetRawText());
-        if (config == null)
+        if (abstractConfig == null)
             throw new Exception("Invalid businesscard configurations");
+        var config = abstractConfig as BusinesscardConfig    ?? throw new ArgumentException(
+            $"Expected {nameof(BusinesscardConfig)}, got {abstractConfig.GetType().Name}");
         // Console.WriteLine(_pricing.ThicknessPrices[0]);
         decimal price = _pricing.BasePrice ;
         price += _pricing.ThicknessPrices.GetValueOrDefault(config.Thickness);

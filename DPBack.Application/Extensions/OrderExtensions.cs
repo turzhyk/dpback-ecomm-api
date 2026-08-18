@@ -1,4 +1,5 @@
-﻿using DPBack.Application.Contracts;
+﻿using System.Text.Json;
+using DPBack.Application.Contracts;
 using DPBack.Domain.Models;
 
 namespace DPBack.Application.Extensions;
@@ -17,7 +18,8 @@ public static class OrderExtensions
             {
                 Quantity = i.Quantity,
                 Type = i.Type,
-                Options = i.Options
+                Options = 
+                     JsonSerializer.SerializeToElement(i.Options, i.Options.GetType()),
             }).ToList(),
             History = o.History.Select(h => new OrderHistoryElementResponse
             {

@@ -1,7 +1,10 @@
+using System.Text.Json.Serialization;
+
 namespace DPBack.Domain.Enums.Products;
 
 public class Businesscard
 {
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum Thickness
     {
         T250,
@@ -9,6 +12,7 @@ public class Businesscard
         T350
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum Coating
     {
         Glossy,
@@ -16,11 +20,11 @@ public class Businesscard
         SoftTouch
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum PrintType
     {
         BW,
         Color,
-        None            
+        None
     }
-
 }

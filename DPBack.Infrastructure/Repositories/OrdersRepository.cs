@@ -1,6 +1,9 @@
-﻿using DPBack.Application.Abstractions;
+﻿using System.Text.Json;
+using DPBack.Application.Abstractions;
+using DPBack.Application.Mappers;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
+using DPBack.Domain.Models.Products;
 using DPBack.Infrastructure.Contexts;
 using DPBack.Infrastructure.Entities;
 using DPBack.Infrastructure.Mappers;
@@ -12,20 +15,22 @@ namespace DPBack.Infrastructure.Repositories
 
     {
         private readonly OrderStoreDbContext _context;
+        private readonly ProductConfigMapperFactory _mapper;
 
-        public OrdersRepository(OrderStoreDbContext context)
+        public OrdersRepository(OrderStoreDbContext context, ProductConfigMapperFactory mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
-        private static Order MapToOrder(OrderEntity e)
+        private static Order MapToOrder(OrderEntity e, ProductConfigMapperFactory mapper)
         {
             var items = e.Items.Select(i => new OrderItem
             {
                 Id = i.Id,
                 Quantity = i.Quantity,
                 Type = i.Type,
-                Options = i.Options
+                Options = mapper.Map(i.Type,  JsonSerializer.Deserialize<JsonElement>(i.Options)),
             }).ToList();
             var history = e.History.Select(h => new OrderHistoryElement
             {
@@ -65,7 +70,7 @@ namespace DPBack.Infrastructure.Repositories
                     .FirstOrDefaultAsync(cToken);
             if (orderEntity == null)
                 return null;
-            return MapToOrder(orderEntity);
+            return MapToOrder(orderEntity, _mapper);
         }
 
         public async Task<int> Count(CancellationToken cToken)
@@ -88,7 +93,7 @@ namespace DPBack.Infrastructure.Repositories
                     .OrderByDescending(x => x.CreatedAt)
                     .ToListAsync(cToken);
 
-            return orderEntities.Select(MapToOrder).ToList();
+            return orderEntities.Select(x => MapToOrder(x, _mapper)).ToList();
         }
 
         public async Task<Guid> Create(Order order, CancellationToken cToken)
@@ -108,7 +113,9 @@ namespace DPBack.Infrastructure.Repositories
                 Id = i.Id,
                 Quantity = i.Quantity,
                 Type = i.Type,
-                Options = i.Options,
+                Options = i.Options is null
+                    ? null
+                    : JsonSerializer.Serialize(i.Options, i.Options.GetType()),
             }).ToList();
             var orderEntity = new OrderEntity
             {

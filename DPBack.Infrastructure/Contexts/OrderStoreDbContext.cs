@@ -28,6 +28,9 @@ namespace DPBack.Infrastructure.Contexts
                 .Property(o => o.OrderNumber)
                 .HasDefaultValueSql("nextval('\"OrderNumbers\"')");
             modelBuilder.Entity<CustomerEntity>().HasIndex(x => x.Phone).IsUnique();
+            modelBuilder.Entity<OrderItemEntity>()
+                .Property(x => x.Options)
+                .HasColumnType("text");
         }
     }
 }

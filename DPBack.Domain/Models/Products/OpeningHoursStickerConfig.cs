@@ -3,7 +3,7 @@ using DPBack.Domain.Enums.Products;
 
 namespace DPBack.Domain.Models.Products;
 
-public class OpeningHoursStickerConfig
+public class OpeningHoursStickerConfig:ProductConfig
 {
     [JsonPropertyName("size")]
     public Sticker.Size Size { get; set; }

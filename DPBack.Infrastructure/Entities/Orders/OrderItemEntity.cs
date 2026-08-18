@@ -12,7 +12,7 @@ public class OrderItemEntity
     public int Quantity { get; set; }
     public OrderItemType Type { get; set; }
     public decimal PricePerUnit { get; set; }
-    public JsonElement Options { get; set; }
+    public string? Options { get; set; }
     
     public Guid OrderId { get; set; }
     public OrderEntity Order { get; set; }

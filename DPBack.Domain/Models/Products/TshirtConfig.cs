@@ -3,7 +3,7 @@ using DPBack.Domain.Enums.Products;
 
 namespace DPBack.Domain.Models.Products;
 
-public class TshirtConfig
+public class TshirtConfig:ProductConfig
 {
     [JsonPropertyName("size")] public Clothes.Size Size { get; set; }
     [JsonPropertyName("color")] public Clothes.Color Color { get; set; }

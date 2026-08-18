@@ -1,8 +1,10 @@
 ﻿using System.Text.Json;
 using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts;
+using DPBack.Application.Mappers;
 using DPBack.Application.Services;
 using DPBack.Domain.Enums;
+using DPBack.Domain.Models.Products;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -16,6 +18,7 @@ public class OrderServiceTests
     private readonly Mock<IPaymentService> _mockPaymentService;
     private readonly Mock<IPriceCalcService> _mockCalculator;
     private readonly IOrdersService _service;
+    private readonly Mock<ProductConfigMapperFactory> _mockMapper;
 
     public OrderServiceTests()
     {
@@ -23,8 +26,9 @@ public class OrderServiceTests
         _mockLogger = new Mock<ILogger<OrdersService>>();
         _mockCalculator = new Mock<IPriceCalcService>();
         _mockPaymentService = new Mock<IPaymentService>();
+        _mockMapper = new Mock<ProductConfigMapperFactory>();
         _service = new OrdersService(_mockRepository.Object, _mockPaymentService.Object, _mockCalculator.Object,
-            _mockLogger.Object);
+            _mockLogger.Object, _mockMapper.Object);
     }
 
     [Fact]

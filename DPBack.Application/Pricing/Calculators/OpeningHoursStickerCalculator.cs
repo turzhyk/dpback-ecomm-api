@@ -19,12 +19,12 @@ public class OpeningHoursStickerCalculator : IPriceCalculator
 
     public OrderItemType Type => OrderItemType.OpeningHoursSticker;
 
-    public decimal Calculate(JsonElement configJson)
+    public decimal Calculate(ProductConfig abstractConfig)
     {
-        var config = JsonSerializer.Deserialize<OpeningHoursStickerConfig>(configJson.GetRawText());
-        if (config == null)
-            throw new Exception("Invalid opening hours sticker configurations");
-        
+        if (abstractConfig == null)
+            throw new Exception("Invalid businesscard configurations");
+        var config = abstractConfig as OpeningHoursStickerConfig    ?? throw new ArgumentException(
+            $"Expected {nameof(OpeningHoursStickerConfig)}, got {abstractConfig.GetType().Name}");
         
         if(!_pricing.Size.ContainsKey(config.Size)) throw new Exception($"Sticker size {config.Size} is not allowed");
 
