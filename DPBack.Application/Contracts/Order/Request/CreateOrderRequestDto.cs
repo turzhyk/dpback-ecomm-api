@@ -6,6 +6,7 @@ namespace DPBack.Application.Contracts
         string Desc,
         Guid CreatedBy,
         List<OrderItemRequest> Items,
-        bool Paid
+        bool Paid,
+        Guid? CustomerId
     );
 }

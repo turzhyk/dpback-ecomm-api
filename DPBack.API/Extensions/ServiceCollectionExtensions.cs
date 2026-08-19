@@ -36,6 +36,7 @@ public static class ServiceCollectionExtensions
         
         //Config
         services.AddScoped<IProductConfigMapper, BusinesscardsConfigMapper>();
+        services.AddScoped<IProductConfigMapper, TshirtConfigMapper>();
 
         services.AddScoped<PriceCalculatorFactory>();
         services.AddScoped<ProductConfigMapperFactory>();
