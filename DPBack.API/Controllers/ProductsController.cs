@@ -15,7 +15,7 @@ public class ProductsController:ControllerBase
         _productsService = productsService;
     }
     [HttpGet]
-    public ActionResult<ProductListResponce> GetProducts()
+    public ActionResult<ProductListResponse> GetProducts()
     {
         return _productsService.ListProducts();
     }

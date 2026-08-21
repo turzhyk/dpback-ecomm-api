@@ -4,5 +4,5 @@ namespace DPBack.Application.Abstractions;
 
 public interface IProductsService
 {
-    public ProductListResponce ListProducts();
+    public ProductListResponse ListProducts();
 }
