@@ -15,7 +15,8 @@ public class ProductsService : IProductsService
             [
                 new ProductSchemeDto
                 {
-                    Name = OrderItemType.Businesscard.ToString(),
+                    Name = "Business cards",
+                    Key = OrderItemType.Businesscard,
                     Options =
                     [
                         new ProductOptionSchemeDto

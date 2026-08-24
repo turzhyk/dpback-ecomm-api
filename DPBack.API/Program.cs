@@ -62,7 +62,7 @@ builder.Services
     });
 builder.Services.AddSingleton(new JsonSerializerOptions
 {
-    PropertyNameCaseInsensitive = true
+    PropertyNameCaseInsensitive = false
 });
 var app = builder.Build();
 await app.SeedDBAsync(configuration);

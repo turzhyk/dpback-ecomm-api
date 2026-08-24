@@ -24,16 +24,15 @@ Clean Architecture with 5 layers:
 - **Tests** - well, unit-test
 
 ## Getting started
-- Install Docker  
+- Install and launch Docker  
 `https://www.docker.com/`
-- Start Docker
 - Clone this repo  
 `git clone https://github.com/turzhyk/dpback-ecomm-api`
-- In project root run  
-`docker compose up`
-- Then  
-`cd ./DPBack.API/`  
-`dotnet run`
+- In project root (`cd dpback-ecomm-api`) run  
+`cp .env.example .env`  
+`docker compose up -d --build`
+- The API is running!
+
 
 __Swagger will be available at http://localhost:5030/swagger/index.html__
 ## Design Decisions

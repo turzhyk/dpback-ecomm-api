@@ -1,3 +1,5 @@
+using DPBack.Domain.Enums;
+
 namespace DPBack.Application.Contracts.Products;
 
 public record ProductListResponse
@@ -8,6 +10,7 @@ public record ProductListResponse
 public record ProductSchemeDto
 {
     public required string Name { get; init; }
+    public required OrderItemType Key { get; init; }
     public List<ProductOptionSchemeDto>? Options { get; init; } = [];
 }
 
