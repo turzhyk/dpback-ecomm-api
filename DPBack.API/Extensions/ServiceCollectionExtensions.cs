@@ -25,13 +25,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IProductsService, ProductsService>();
 
-        services.Configure<BusinesscardPricing>(
-            configuration.GetSection("Pricing:Businesscard"));
+       
         services.AddScoped<IPriceCalculator, BusinesscardCalculator>();
-        services.Configure<OpeningHoursStickerPricing>(
-            configuration.GetSection("Pricing:WindowStickers:OpeningHours"));
         services.AddScoped<IPriceCalculator, OpeningHoursStickerCalculator>();
-        
         services.AddScoped<IPriceCalculator, TshirtCalculator>();
         
         //Config

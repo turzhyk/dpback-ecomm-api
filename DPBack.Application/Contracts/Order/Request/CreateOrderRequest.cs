@@ -2,10 +2,10 @@
 
 namespace DPBack.Application.Contracts
 {
-    public record CreateOrderRequestDto(
+    public record CreateOrderRequest(
         string Desc,
         Guid CreatedBy,
-        List<OrderItemRequest> Items,
+        IReadOnlyCollection<OrderItemRequest> Items,
         bool Paid,
         Guid? CustomerId
     );

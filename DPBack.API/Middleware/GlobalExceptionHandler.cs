@@ -41,6 +41,7 @@ public sealed class GlobalExceptionHandler
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Not found"),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             StatusChangeNotAllowedException => (StatusCodes.Status409Conflict, "Status change not allowed"),
+            InvalidJsonValuesException => (StatusCodes.Status400BadRequest, "Invalid Json Value"),
             _ => (StatusCodes.Status500InternalServerError, "Internal server error")
         };
         context.Response.StatusCode = statusCode;

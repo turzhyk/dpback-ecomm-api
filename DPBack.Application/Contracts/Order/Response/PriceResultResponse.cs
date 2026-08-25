@@ -1,6 +1,6 @@
 ﻿namespace DPBack.Application.Contracts;
 
-public class PriceResultDto
+public class PriceResultResponse
 {
     public float PricePerUnity { get; set; }
 }

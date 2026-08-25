@@ -3,7 +3,7 @@ using DPBack.Domain.Enums;
 
 namespace DPBack.Application.Contracts;
 
-public record GetPriceDto(
+public record GetPriceRequest(
     OrderItemType Type,
     JsonElement Configuration
 );

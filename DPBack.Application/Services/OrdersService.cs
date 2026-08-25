@@ -51,7 +51,7 @@ namespace DPBack.Application.Services
         }
 
 
-        public async Task<List<OrderResponseDto>> GetAllOrders(CancellationToken cToken)
+        public async Task<List<OrderResponse>> GetAllOrders(CancellationToken cToken)
         {
             _logger.LogInformation("Getting all orders");
             var orders = await _repo.GetAll(cToken, 0, 100);
@@ -60,7 +60,7 @@ namespace DPBack.Application.Services
             return response;
         }
 
-        public async Task<PagedRespose<OrderResponseDto>> GetOrdersFiltered(OrdersFilteredRequestDto request,
+        public async Task<PagedRespose<OrderResponse>> GetOrdersFiltered(OrdersFilteredRequestDto request,
             CancellationToken cToken)
         {
             var skip = (request.PageNumber - 1) * request.PageSize;
@@ -72,7 +72,7 @@ namespace DPBack.Application.Services
 
             var totalCount = await _repo.Count(cToken);
             var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
-            return new PagedRespose<OrderResponseDto>
+            return new PagedRespose<OrderResponse>
             {
                 Items = orders.Select(o => o.ToDto()).ToList(),
                 TotalItems = totalCount,
@@ -82,7 +82,7 @@ namespace DPBack.Application.Services
             };
         }
 
-        public async Task<OrderResponseDto> GetOrderById(Guid userId, Guid orderId, CancellationToken cToken)
+        public async Task<OrderResponse> GetOrderById(Guid userId, Guid orderId, CancellationToken cToken)
         {
             _logger.LogInformation(
                 "Getting order {orderId} for user {userId}",
@@ -95,11 +95,11 @@ namespace DPBack.Application.Services
             return order.ToDto();
         }
 
-        public async Task<CreateOrderResponseDto> CreateOrder(Guid userId, CreateOrderRequestDto requestDto,
+        public async Task<CreateOrderResponse> CreateOrder(Guid userId, CreateOrderRequest request,
             CancellationToken cToken)
         {
             _logger.LogInformation("Creating new order for user {userId}", userId);
-            var items = requestDto.Items.Select(i => new OrderItem
+            var items = request.Items.Select(i => new OrderItem
             {
                 Id = Guid.NewGuid(),
                 Quantity = i.Quantity,
@@ -107,15 +107,15 @@ namespace DPBack.Application.Services
                 Options = _mapper.Map(i.Type, i.Options),
             }).ToList();
             decimal totalPrice = 0;
-            foreach (var i in requestDto.Items)
+            foreach (var i in request.Items)
             {
                 totalPrice += _priceService.Calculate(i);
             }
-            var paymentStatus = requestDto.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
+            var paymentStatus = request.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
             var (order, error) = Order.Create(
                 Guid.NewGuid(),
                 0,
-                requestDto.Desc,
+                request.Desc,
                 totalPrice,
                 userId,
                 items,
@@ -129,12 +129,12 @@ namespace DPBack.Application.Services
             await _repo.Create(order, cToken);
             if (paymentStatus == OrderPaymentStatus.Paid)
             {
-                return new CreateOrderResponseDto(order.Id);
+                return new CreateOrderResponse(order.Id);
             }
             else
             {
                 var paymentUrl = await _paymentService.CreatePayment(order.Id.ToString(), totalPrice);
-                return new CreateOrderResponseDto(order.Id, paymentUrl);
+                return new CreateOrderResponse(order.Id, paymentUrl);
             }
         }
 

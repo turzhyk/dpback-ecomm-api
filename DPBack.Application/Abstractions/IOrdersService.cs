@@ -9,10 +9,10 @@ namespace DPBack.Application.Abstractions
 {
     public interface IOrdersService
     {
-        Task<CreateOrderResponseDto> CreateOrder(Guid userId,CreateOrderRequestDto createOrder, CancellationToken cToken);
-        Task<List<OrderResponseDto>> GetAllOrders(CancellationToken cToken);
-        Task<PagedRespose<OrderResponseDto>> GetOrdersFiltered(OrdersFilteredRequestDto request, CancellationToken cToken);
-        Task<OrderResponseDto> GetOrderById(Guid userId,Guid orderId, CancellationToken cToken);
+        Task<CreateOrderResponse> CreateOrder(Guid userId,CreateOrderRequest createOrder, CancellationToken cToken);
+        Task<List<OrderResponse>> GetAllOrders(CancellationToken cToken);
+        Task<PagedRespose<OrderResponse>> GetOrdersFiltered(OrdersFilteredRequestDto request, CancellationToken cToken);
+        Task<OrderResponse> GetOrderById(Guid userId,Guid orderId, CancellationToken cToken);
         Task AssignToAsync(Guid orderId, string author, CancellationToken cToken);
         Task SetPaymentStatus(Guid orderId, OrderPaymentStatus status, CancellationToken cToken);
         Task<OrderPaymentStatus> GetPaymentStatus(Guid orderId, CancellationToken cToken);

@@ -7,10 +7,6 @@ namespace DPBack.Application.Options.Pricing;
 public class BusinesscardPricing
 {
     public decimal BasePrice { get; set; }
-    [JsonPropertyName("Thickness")]
-    public Dictionary<Businesscard.Thickness, decimal> ThicknessPrices  {get;set;} = new();
-    [JsonPropertyName("Coating")]
-    public Dictionary<Businesscard.Coating, decimal> CoatingPrices { get; set; } = new();
-
-    
+    public Dictionary<string, decimal> ThicknessPrices  {get;set;} = new();
+    public Dictionary<string, decimal> CoatingPrices { get; set; } = new();
 }

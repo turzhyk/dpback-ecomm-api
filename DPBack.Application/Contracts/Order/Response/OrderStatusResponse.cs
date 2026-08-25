@@ -3,7 +3,7 @@ using DPBack.Domain.Models;
 
 namespace DPBack.Application.Contracts;
 
-public class OrderStatusResponseDto
+public class OrderStatusResponse
 {
     public OrderStatus Status { get;set; }
 }

@@ -6,9 +6,9 @@ namespace DPBack.Application.Extensions;
 
 public static class OrderExtensions
 {
-    public static OrderResponseDto ToDto(this Order o)
+    public static OrderResponse ToDto(this Order o)
     {
-        return new OrderResponseDto
+        return new OrderResponse
         {
             id = o.Id,
             OrderNumber = o.OrderNumber,

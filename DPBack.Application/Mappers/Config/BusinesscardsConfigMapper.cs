@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using DPBack.Application.Abstractions;
+using DPBack.Application.Exceptions;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models.Products;
 
@@ -20,8 +21,7 @@ public class BusinesscardsConfigMapper : IProductConfigMapper
 
     public ProductConfig Map(JsonElement json)
     {
-        var result = json.Deserialize<BusinesscardConfig>(_jsonOptions) ?? throw new JsonException("Invalid config");
-
+        var result = json.Deserialize<BusinesscardConfig>(_jsonOptions) ?? throw new InvalidJsonValuesException("Invalid config");
         return result;
     }
 }

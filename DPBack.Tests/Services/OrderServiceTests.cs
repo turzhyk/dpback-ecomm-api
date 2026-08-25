@@ -34,9 +34,9 @@ public class OrderServiceTests
     [Fact]
     public async Task CreateOrder_ShouldReturnResponseDto()
     {
-        var orderDto = new CreateOrderRequestDto("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
+        var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
         {
-            new OrderItemRequest(1, OrderItemType.Businesscard, new JsonElement())
+            new OrderItemRequest(1, OrderItemType.Businesscard, new JsonElement(), null)
         }, false, Guid.NewGuid());
 
         _mockPaymentService.Setup(x =>

@@ -62,7 +62,8 @@ builder.Services
     });
 builder.Services.AddSingleton(new JsonSerializerOptions
 {
-    PropertyNameCaseInsensitive = false
+    PropertyNameCaseInsensitive = true,
+    UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
 });
 var app = builder.Build();
 await app.SeedDBAsync(configuration);

@@ -14,21 +14,21 @@ public class BusinesscardCalculator : IPriceCalculator
     private readonly BusinesscardPricing _pricing;
     public OrderItemType Type => OrderItemType.Businesscard;
     
-    public BusinesscardCalculator(IOptions<BusinesscardPricing> pricing)
+    public BusinesscardCalculator(IOptions<Options.Pricing.Pricing> pricing)
     {
-        _pricing = pricing.Value;
+        _pricing = pricing.Value.Businesscard;
     }
 
     public decimal Calculate(ProductConfig abstractConfig)
     {
         if (abstractConfig == null)
-            throw new Exception("Invalid businesscard configurations");
+            throw new Exception("Invalid configurations");
         var config = abstractConfig as BusinesscardConfig    ?? throw new ArgumentException(
             $"Expected {nameof(BusinesscardConfig)}, got {abstractConfig.GetType().Name}");
-        // Console.WriteLine(_pricing.ThicknessPrices[0]);
-        decimal price = _pricing.BasePrice ;
-        price += _pricing.ThicknessPrices.GetValueOrDefault(config.Thickness);
-        price += _pricing.CoatingPrices.GetValueOrDefault(config.Coating);
+
+        decimal price = _pricing.BasePrice;
+        price += _pricing.ThicknessPrices.GetValueOrDefault(config.Thickness.ToString());
+        price += _pricing.CoatingPrices.GetValueOrDefault(config.Coating.ToString());
         return price;
     }
 }
