@@ -3,6 +3,6 @@ namespace DPBack.Domain.Enums;
 public enum UserRole
 {
     User,
-    Worker,
+    Manager,
     Admin,
 }

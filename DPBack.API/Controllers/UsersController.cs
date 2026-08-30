@@ -38,7 +38,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<UserLoginRespose>> LoginUser([FromBody] UserLoginRequest request, CancellationToken cToken)
+    public async Task<ActionResult<UserLoginResponse>> LoginUser([FromBody] UserLoginRequest request, CancellationToken cToken)
     {
         try
         {
@@ -52,7 +52,7 @@ public class UsersController : ControllerBase
     }
     [AllowAnonymous]
     [HttpGet("refresh")]
-    public async Task<ActionResult<UserLoginRespose>> RefreshToken(string oldRefreshToken, CancellationToken cToken)
+    public async Task<ActionResult<UserLoginResponse>> RefreshToken(string oldRefreshToken, CancellationToken cToken)
     {
         var result = await _service.RefreshToken(oldRefreshToken, cToken);
         return Ok(result);

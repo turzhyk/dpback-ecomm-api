@@ -32,6 +32,38 @@ public class ProductsService : IProductsService
                             Values = Enum.GetNames<Businesscard.Coating>().ToList()
                         }
                     ]
+                },
+                new ProductSchemeDto
+                {
+                    Name = "T Shirt",
+                    Key = OrderItemType.Tshirt,
+                    Options =
+                    [
+                        new ProductOptionSchemeDto
+                        {
+                            Name = "material",
+                            Key = nameof(Clothes.Material),
+                            Values = Enum.GetNames<Clothes.Material>().ToList()
+                        },
+                        new ProductOptionSchemeDto
+                        {
+                            Name = "color",
+                            Key = nameof(Clothes.Color),
+                            Values = Enum.GetNames<Clothes.Color>().ToList()
+                        },
+                        new ProductOptionSchemeDto
+                        {
+                            Name = "print type",
+                            Key = nameof(Clothes.PrintType),
+                            Values = Enum.GetNames<Clothes.PrintType>().ToList()
+                        },
+                        new ProductOptionSchemeDto
+                        {
+                            Name = nameof(Clothes.Size),
+                            Key = nameof(Clothes.Size),
+                            Values = Enum.GetNames<Clothes.Size>().ToList()
+                        }
+                    ]
                 }
             ]
         };
@@ -51,7 +83,7 @@ public class ProductsService : IProductsService
             result.Add(new ProductOptionSchemeDto
             {
                 Name = option.Name,
-                Key = option.Key.ToString(), 
+                Key = option.Key.ToString(),
                 Values = Enum.GetNames(option.Key).ToList()
             });
         }

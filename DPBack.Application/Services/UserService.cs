@@ -53,7 +53,7 @@ public class UserService : IUserService
         return user.Id;
     }
 
-    public async Task<UserLoginRespose> Login(UserLoginRequest request, CancellationToken cToken)
+    public async Task<UserLoginResponse> Login(UserLoginRequest request, CancellationToken cToken)
     {
         _logger.LogInformation($"Login user {request.Login}");
         var user = await _repo.GetByEmailAsync(request.Login, cToken);
@@ -68,10 +68,10 @@ public class UserService : IUserService
         var refreshToken = _tokenProvider.CreateRefreshToken();
         await _repo.AddRefreshTokenAsync(user, refreshToken, cToken);
         await _repo.SaveChangesAsync(cToken);
-        return new UserLoginRespose(token, refreshToken);
+        return new UserLoginResponse(token, refreshToken);
     }
 
-    public async Task<UserLoginRespose> RefreshToken(string oldRefreshToken, CancellationToken cToken)
+    public async Task<UserLoginResponse> RefreshToken(string oldRefreshToken, CancellationToken cToken)
     {
         var refresh = await _repo.GetRefreshTokenByTokenAsync(oldRefreshToken, cToken);
         if (refresh == null)
@@ -105,7 +105,7 @@ public class UserService : IUserService
         await _repo.AddRefreshTokenAsync(user, newRefreshToken, cToken);
         await _repo.SaveChangesAsync(cToken);
 
-        var response = new UserLoginRespose(newToken, newRefreshToken);
+        var response = new UserLoginResponse(newToken, newRefreshToken);
 
         return response;
     }

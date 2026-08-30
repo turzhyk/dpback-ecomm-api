@@ -9,12 +9,12 @@ namespace DPBack.Application.Contracts
         public int OrderNumber { get; set; }
         public string Desc { get; set; }
         public decimal Price { get; set; }
-        public IReadOnlyCollection<OrderItemResponse> Items { get; set; }
+        public List<OrderItemResponse> Items { get; set; }
         public string AssignedTo { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsSuspended { get; set; }
         public OrderStatus Status { get; set; }
         public OrderPaymentStatus PaymentStatus { get; set; }
-        public IReadOnlyCollection<OrderHistoryElementResponse> History { get; set; }
+        public List<OrderHistoryElementResponse> History { get; set; }
     };
 }
