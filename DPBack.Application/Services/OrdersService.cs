@@ -88,7 +88,7 @@ namespace DPBack.Application.Services
                 "Getting order {orderId} for user {userId}",
                 orderId,
                 userId);
-            var order = await _repo.GetWithId(orderId, cToken);
+            var order = await _repo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
 
@@ -140,7 +140,7 @@ namespace DPBack.Application.Services
 
         public async Task ChangeStatus(Guid orderId, string author, OrderStatus newStatus, CancellationToken cToken)
         {
-            var order = await _repo.GetWithId(orderId, cToken);
+            var order = await _repo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
             _logger.LogInformation("Changing {orderId} order status from {oldStatus} to {newStatus} by {author}",
@@ -162,7 +162,7 @@ namespace DPBack.Application.Services
         public async Task<OrderPaymentStatus> GetPaymentStatus(Guid orderId, CancellationToken cToken)
         {
             _logger.LogInformation("Getting order {orderId} payment status", orderId);
-            var order = await _repo.GetWithId(orderId, cToken);
+            var order = await _repo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
             return order.PaymentStatus;
@@ -170,7 +170,7 @@ namespace DPBack.Application.Services
 
         public async Task SetPaymentStatus(Guid orderId, OrderPaymentStatus status, CancellationToken cToken)
         {
-            var order = await _repo.GetWithId(orderId, cToken);
+            var order = await _repo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
             if (order.PaymentStatus == status)
@@ -183,7 +183,7 @@ namespace DPBack.Application.Services
 
         public async Task AssignToAsync(Guid orderId, string author, CancellationToken cToken)
         {
-            var order = await _repo.GetWithId(orderId, cToken);
+            var order = await _repo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
 
@@ -225,9 +225,17 @@ namespace DPBack.Application.Services
             return new CustomerResponseDto(result.Id, result.Name, result.Phone, result.Email);
         }
 
-        public async Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList()
+        public async Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList() => null;
+
+        public async Task SuspendOrderAsync(Guid id, CancellationToken cToken)
         {
-            return null;
+            var order = await _repo.GetById(id, cToken);
+            if (order is null)
+                throw new OrderDoesNotExistException(id);
+            if (order.Status == OrderStatus.Done)
+                throw new UnableToChangeOrderStatusException("Unable to change order status. The order is already done.");
+            await _repo.SuspendOrderAsync(id, cToken);
         }
+          
     }
 }

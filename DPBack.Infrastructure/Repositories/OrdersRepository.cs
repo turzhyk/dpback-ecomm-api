@@ -59,7 +59,7 @@ namespace DPBack.Infrastructure.Repositories
             return order;
         }
 
-        public async Task<Order?> GetWithId(Guid id, CancellationToken cToken)
+        public async Task<Order?> GetById(Guid id, CancellationToken cToken)
         {
             var orderEntity =
                 await _context.Orders
@@ -269,6 +269,16 @@ namespace DPBack.Infrastructure.Repositories
                 .Where(o => o.Id == id)
                 .ExecuteDeleteAsync(cToken);
             return id;
+        }
+
+        public async Task SuspendOrderAsync(Guid id, CancellationToken cToken)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(x => x.Id == id, cToken);
+            if (order is not null)
+            {
+                order.IsSuspended = true;
+                await _context.SaveChangesAsync(cToken);
+            }
         }
     }
 }

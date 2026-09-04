@@ -85,5 +85,13 @@ namespace DPBack.API.Controllers
                 { PaymentStatus = status };
             return Ok(response);
         }
+
+        [HttpPost("{id}/suspend")]
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult> SuspendOrder(Guid id, CancellationToken cToken)
+        {
+            await _service.SuspendOrderAsync(id, cToken);
+            return Ok();
+        }
     }
 }

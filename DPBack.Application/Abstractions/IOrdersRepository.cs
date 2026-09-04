@@ -9,7 +9,7 @@ namespace DPBack.Application.Abstractions
         Task<Guid> Delete(Guid id, CancellationToken cToken);
         Task<List<Order>> GetAll(CancellationToken cToken, int skip, int take);
         Task<int> Count(CancellationToken cToken);
-        Task<Order?> GetWithId(Guid id, CancellationToken cToken);
+        Task<Order?> GetById(Guid id, CancellationToken cToken);
         Task Update(Order order, CancellationToken cToken);
         Task<Guid> Update(Guid id, string description, decimal price, string assignedTo, CancellationToken cToken);
         Task ChangeStatus(Guid orderId, string author, OrderStatus status, string newAuthor, CancellationToken cToken);
@@ -24,5 +24,6 @@ namespace DPBack.Application.Abstractions
         Task<Guid> CreateCustomerAsync(Customer customer, CancellationToken cToken);
         Task<List<Customer>> GetAllCustomersAsync(CancellationToken cancellationToken);
         Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken);
+        Task SuspendOrderAsync(Guid id, CancellationToken cToken);
     }
 }

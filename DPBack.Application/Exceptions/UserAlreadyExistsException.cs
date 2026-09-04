@@ -2,5 +2,7 @@
 
 public class UserAlreadyExistsException:Exception
 {
-    public UserAlreadyExistsException(string email)    : base($"User with email '{email}' already exists"){}
+    public UserAlreadyExistsException(){}
+    public UserAlreadyExistsException(string message) : base(message){}
+    public UserAlreadyExistsException(string message, Exception innerException) : base(message, innerException){}
 }

@@ -2,7 +2,11 @@
 
 public class InvalidJsonValuesException : Exception
 {
-    public InvalidJsonValuesException(string error) : base(error)
+    public InvalidJsonValuesException(){}
+    public InvalidJsonValuesException(string message) : base(message)
+    {
+    }
+    public InvalidJsonValuesException(string message, Exception innerException) : base(message, innerException)
     {
     }
 }
