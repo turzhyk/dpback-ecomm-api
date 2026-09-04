@@ -11,7 +11,7 @@ namespace DPBack.Application.Abstractions
     {
         Task<CreateOrderResponse> CreateOrder(Guid userId,CreateOrderRequest createOrder, CancellationToken cToken);
         Task<List<OrderResponse>> GetAllOrders(CancellationToken cToken);
-        Task<PagedRespose<OrderResponse>> GetOrdersFiltered(OrdersFilteredRequestDto request, CancellationToken cToken);
+        Task<PagedResponse<OrderResponse>> GetOrdersFiltered(OrdersFilteredRequestDto request, CancellationToken cToken);
         Task<OrderResponse> GetOrderById(Guid userId,Guid orderId, CancellationToken cToken);
         Task AssignToAsync(Guid orderId, string author, CancellationToken cToken);
         Task SetPaymentStatus(Guid orderId, OrderPaymentStatus status, CancellationToken cToken);

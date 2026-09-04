@@ -1,6 +1,6 @@
 namespace DPBack.Application.Contracts;
 
-public class PagedRespose<T> where T : class
+public class PagedResponse<T> where T : class
 {
     public IReadOnlyList<T>? Items { get; set; }
     public int TotalItems { get; set; }

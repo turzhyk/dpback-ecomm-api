@@ -60,7 +60,7 @@ namespace DPBack.Application.Services
             return response;
         }
 
-        public async Task<PagedRespose<OrderResponse>> GetOrdersFiltered(OrdersFilteredRequestDto request,
+        public async Task<PagedResponse<OrderResponse>> GetOrdersFiltered(OrdersFilteredRequestDto request,
             CancellationToken cToken)
         {
             var skip = (request.PageNumber - 1) * request.PageSize;
@@ -72,7 +72,7 @@ namespace DPBack.Application.Services
 
             var totalCount = await _repo.Count(cToken);
             var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
-            return new PagedRespose<OrderResponse>
+            return new PagedResponse<OrderResponse>
             {
                 Items = orders.Select(o => o.ToDto()).ToList(),
                 TotalItems = totalCount,

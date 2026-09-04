@@ -139,7 +139,11 @@ public class UsersRepository : IUsersRepository
         await _context.SaveChangesAsync(cToken);
     }
 
-
+    public async Task<int> DeleteExpiredTokensAsync(CancellationToken cToken)
+    {
+        var now = DateTime.UtcNow;
+        return await _context.RefreshTokens.Where(x => x.ExpiresAt < now).ExecuteDeleteAsync(cToken);
+    }
 
     public async Task SaveChangesAsync(CancellationToken cToken)
     {

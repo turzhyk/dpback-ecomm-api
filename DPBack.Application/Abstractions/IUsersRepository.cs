@@ -18,7 +18,6 @@ public interface IUsersRepository
 
     Task<(RefreshToken?, User?)> GetRefreshTokenWithUserByTokenAsync(string token, CancellationToken cToken);
     Task SetTokenRevokedAsync(string token, CancellationToken cToken);
-
-
+    Task<int> DeleteExpiredTokensAsync( CancellationToken cToken);
     Task SaveChangesAsync(CancellationToken cToken);
 }

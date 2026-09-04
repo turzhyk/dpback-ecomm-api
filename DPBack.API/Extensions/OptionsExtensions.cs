@@ -10,6 +10,7 @@ public static class OptionsExtensions
         services.Configure<JwtOptions>(configuration.GetSection("Jwt"));
         services.Configure<PayUOptions>(configuration.GetSection("PayU"));
         services.Configure<Pricing>(configuration.GetSection("Pricing"));
+        services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
         return services;
     }
 }
