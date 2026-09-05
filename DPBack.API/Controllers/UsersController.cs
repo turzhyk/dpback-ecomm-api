@@ -33,7 +33,7 @@ public class UsersController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateUser(UserCreateRequest request, CancellationToken cToken)
     {
-        var id = await _service.CreateUser(request, cToken);
+        var id = await _service.CreateUserAsync(request, cToken);
         return Ok(id);
     }
 
@@ -59,9 +59,9 @@ public class UsersController : ControllerBase
     }
     [Authorize]
     [HttpGet("{id}")]
-    public async Task<ActionResult<UserDto>> GetUserById(Guid id, CancellationToken cToken)
+    public async Task<ActionResult<UserResponse>> GetUserById(Guid id, CancellationToken cToken)
     {
-        var userDto = _service.GetById(id, cToken);
+        var userDto = _service.GetByIdAsync(id, cToken);
         return Ok();
     }
 
@@ -70,7 +70,7 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<List<UserAddressResponseDto>>> GetUserAddresses(CancellationToken cToken)
     {
         var userId = GetCurrentUserId();
-        var result = await  _service.GetAddressesByUserId(userId, cToken);
+        var result = await  _service.GetAddressesByUserIdAsync(userId, cToken);
         return Ok(result);
     }
     [Authorize]
@@ -79,7 +79,7 @@ public class UsersController : ControllerBase
     {
         var userId = GetCurrentUserId();
 
-        await _service.AddUserAddress(userId, request, cToken);
+        await _service.AddUserAddressAsync(userId, request, cToken);
         return Ok();
     }
     [HttpPatch("addresses/{addressId}")]

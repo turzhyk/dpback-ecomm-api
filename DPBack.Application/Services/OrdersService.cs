@@ -51,7 +51,7 @@ namespace DPBack.Application.Services
         }
 
 
-        public async Task<List<OrderResponse>> GetAllOrders(CancellationToken cToken)
+        public async Task<List<OrderResponse>> GetAllAsync(CancellationToken cToken)
         {
             _logger.LogInformation("Getting all orders");
             var orders = await _repo.GetAll(cToken, 0, 100);
@@ -60,7 +60,7 @@ namespace DPBack.Application.Services
             return response;
         }
 
-        public async Task<PagedResponse<OrderResponse>> GetOrdersFiltered(OrdersFilteredRequestDto request,
+        public async Task<PagedResponse<OrderResponse>> GetFilteredAsync(OrdersFilteredRequestDto request,
             CancellationToken cToken)
         {
             var skip = (request.PageNumber - 1) * request.PageSize;
@@ -82,7 +82,7 @@ namespace DPBack.Application.Services
             };
         }
 
-        public async Task<OrderResponse> GetOrderById(Guid userId, Guid orderId, CancellationToken cToken)
+        public async Task<OrderResponse> GetByIdAsync(Guid userId, Guid orderId, CancellationToken cToken)
         {
             _logger.LogInformation(
                 "Getting order {orderId} for user {userId}",
@@ -95,7 +95,7 @@ namespace DPBack.Application.Services
             return order.ToDto();
         }
 
-        public async Task<CreateOrderResponse> CreateOrder(Guid userId, CreateOrderRequest request,
+        public async Task<CreateOrderResponse> CreateAsync(Guid userId, CreateOrderRequest request,
             CancellationToken cToken)
         {
             _logger.LogInformation("Creating new order for user {userId}", userId);
@@ -138,7 +138,7 @@ namespace DPBack.Application.Services
             }
         }
 
-        public async Task ChangeStatus(Guid orderId, string author, OrderStatus newStatus, CancellationToken cToken)
+        public async Task ChangeStatusAsync(Guid orderId, string author, OrderStatus newStatus, CancellationToken cToken)
         {
             var order = await _repo.GetById(orderId, cToken);
             if (order == null)
@@ -159,7 +159,7 @@ namespace DPBack.Application.Services
                 throw new StatusChangeNotAllowedException();
         }
 
-        public async Task<OrderPaymentStatus> GetPaymentStatus(Guid orderId, CancellationToken cToken)
+        public async Task<OrderPaymentStatus> GetPaymentStatusAsync(Guid orderId, CancellationToken cToken)
         {
             _logger.LogInformation("Getting order {orderId} payment status", orderId);
             var order = await _repo.GetById(orderId, cToken);
@@ -168,7 +168,7 @@ namespace DPBack.Application.Services
             return order.PaymentStatus;
         }
 
-        public async Task SetPaymentStatus(Guid orderId, OrderPaymentStatus status, CancellationToken cToken)
+        public async Task SetPaymentStatusAsync(Guid orderId, OrderPaymentStatus status, CancellationToken cToken)
         {
             var order = await _repo.GetById(orderId, cToken);
             if (order == null)
@@ -181,7 +181,7 @@ namespace DPBack.Application.Services
             await _repo.SetPaymentStatus(orderId, status, cToken);
         }
 
-        public async Task AssignToAsync(Guid orderId, string author, CancellationToken cToken)
+        public async Task AssignToUserAsync(Guid orderId, string author, CancellationToken cToken)
         {
             var order = await _repo.GetById(orderId, cToken);
             if (order == null)
@@ -208,7 +208,7 @@ namespace DPBack.Application.Services
             return new CustomerResponseDto(customer.Id, customer.Name, customer.Phone, customer.Email);
         }
 
-        public async Task<CustomersResponseDto> GetAllCustomers(CancellationToken cToken)
+        public async Task<CustomersResponseDto> GetAllCustomersAsync(CancellationToken cToken)
         {
             var customers = await _repo.GetAllCustomersAsync(cToken);
             var result =
@@ -233,7 +233,7 @@ namespace DPBack.Application.Services
             if (order is null)
                 throw new OrderDoesNotExistException(id);
             if (order.Status == OrderStatus.Done)
-                throw new UnableToChangeOrderStatusException("Unable to change order status. The order is already done.");
+                throw new StatusChangeNotAllowedException($"Unable to change order {id} status.");
             await _repo.SuspendOrderAsync(id, cToken);
         }
           

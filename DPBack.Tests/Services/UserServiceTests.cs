@@ -34,7 +34,7 @@ public class UserServiceTests
 
         _mockRepository.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(user);
 
-        var result = await _service.GetById(id, CancellationToken.None);
+        var result = await _service.GetByIdAsync(id, CancellationToken.None);
         Assert.NotNull(result);
         Assert.Equal(id, result.Id);
     }
@@ -45,7 +45,7 @@ public class UserServiceTests
         var id = Guid.NewGuid();
         _mockRepository.Setup(x => x.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
 
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.GetById(id, CancellationToken.None));
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.GetByIdAsync(id, CancellationToken.None));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class UserServiceTests
 
         _mockRepository.Setup(r => r.GetByEmailAsync(email, It.IsAny<CancellationToken>())).ReturnsAsync(user);
 
-        var result = await _service.GetByEmail(email, CancellationToken.None);
+        var result = await _service.GetByEmailAsync(email, CancellationToken.None);
         Assert.NotNull(result);
         Assert.Equal(email, result.Email);
     }
@@ -71,7 +71,7 @@ public class UserServiceTests
             .ReturnsAsync((User)null);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-            _service.GetByEmail(email, CancellationToken.None));
+            _service.GetByEmailAsync(email, CancellationToken.None));
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class UserServiceTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(guid);
 
-        var result = await _service.CreateUser(new UserCreateRequest { Email = email, Password = password },
+        var result = await _service.CreateUserAsync(new UserCreateRequest { Email = email, Password = password },
             CancellationToken.None);
         Assert.Equal(guid, result);
     }
@@ -107,7 +107,7 @@ public class UserServiceTests
         _mockRepository.Setup(x =>
             x.GetAddressesByUserIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(addresses);
 
-        var result = await _service.GetAddressesByUserId(id, CancellationToken.None);
+        var result = await _service.GetAddressesByUserIdAsync(id, CancellationToken.None);
         Assert.Equal(result[0].Id, addresses[0].Id);
     }
 
@@ -119,7 +119,7 @@ public class UserServiceTests
             .ReturnsAsync(true);
         _mockRepository.Setup(x => x.GetAddressesByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(addresses);
-        var result = await _service.GetAddressesByUserId(Guid.NewGuid(), CancellationToken.None);
+        var result = await _service.GetAddressesByUserIdAsync(Guid.NewGuid(), CancellationToken.None);
         Assert.Empty(result);
     }
 
@@ -131,7 +131,7 @@ public class UserServiceTests
             .ReturnsAsync(false);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-            _service.GetAddressesByUserId(Guid.NewGuid(), CancellationToken.None));
+            _service.GetAddressesByUserIdAsync(Guid.NewGuid(), CancellationToken.None));
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class UserServiceTests
             Email = "test@mail.com",
             Options = ""
         };
-        var result = await _service.AddUserAddress(Guid.NewGuid(), dto, CancellationToken.None);
+        var result = await _service.AddUserAddressAsync(Guid.NewGuid(), dto, CancellationToken.None);
         Assert.NotEqual(Guid.Empty, result);
     }
     [Fact]
@@ -165,6 +165,6 @@ public class UserServiceTests
             .ReturnsAsync(false);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-            _service.AddUserAddress(Guid.NewGuid(), null, CancellationToken.None));
+            _service.AddUserAddressAsync(Guid.NewGuid(), null, CancellationToken.None));
     }
 }

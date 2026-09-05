@@ -3,31 +3,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DPBack.API.Middleware;
 
-public sealed class GlobalExceptionHandler
-
+public sealed class GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalExceptionHandler> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<GlobalExceptionHandler> _logger;
-
-    public GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalExceptionHandler> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (OperationCanceledException)
         {
+            logger.LogInformation("Request was canceled by client");
             context.Response.StatusCode = 499;
         }
         catch (Exception error)
         {
-            _logger.LogWarning(error, "Unhandled exception");
+            logger.LogWarning(error, "Unhandled exception");
             await HandleExceptionAsync(context, error);
 
         }
@@ -38,10 +29,12 @@ public sealed class GlobalExceptionHandler
         var (statusCode, title) = error switch
         {
             ArgumentException => (StatusCodes.Status400BadRequest, "Bad request"),
-            KeyNotFoundException => (StatusCodes.Status404NotFound, "Not found"),
-            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
+            KeyNotFoundException  => (StatusCodes.Status404NotFound, "Not found"),
+            UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"), 
             StatusChangeNotAllowedException => (StatusCodes.Status409Conflict, "Status change not allowed"),
+           
             InvalidJsonValuesException => (StatusCodes.Status400BadRequest, "Invalid Json Value"),
+            OrderDoesNotExistException => (StatusCodes.Status404NotFound, "Order does not exist"),
             _ => (StatusCodes.Status500InternalServerError, "Internal server error")
         };
         context.Response.StatusCode = statusCode;
@@ -52,6 +45,7 @@ public sealed class GlobalExceptionHandler
             Type = error.GetType().Name,
             Detail = statusCode == 500 ? null : error.Message
         };
+        problemDetails.Extensions["traceId"] = context.TraceIdentifier;
         return context.Response.WriteAsJsonAsync(problemDetails);
     }
 }

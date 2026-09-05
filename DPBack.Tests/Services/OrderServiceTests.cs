@@ -44,7 +44,7 @@ public class OrderServiceTests
         _mockCalculator.Setup(x =>
             x.Calculate(It.IsAny<OrderItemRequest>())).Returns(10m);
 
-        var result = await _service.CreateOrder(Guid.NewGuid(), orderDto, CancellationToken.None);
+        var result = await _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None);
         
         Assert.NotEmpty(result.PaymentUrl);
         Assert.NotEqual(Guid.Empty,result.OrderId);

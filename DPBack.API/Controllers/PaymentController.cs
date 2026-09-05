@@ -53,15 +53,15 @@ public class PaymentController : Controller
         switch (status)
         {
             case ("WAITING_FOR_CONFIRMATION"):
-                var currentStatus = await _ordersService.GetPaymentStatus(new Guid(orderId),cToken);
+                var currentStatus = await _ordersService.GetPaymentStatusAsync(new Guid(orderId),cToken);
                 if (currentStatus == OrderPaymentStatus.Waiting)
                     await _paymentService.CapturePayment(payuOrderId);
                 break;
             case "CANCELED":
-                await _ordersService.SetPaymentStatus(new Guid(orderId), OrderPaymentStatus.Cancelled,cToken);
+                await _ordersService.SetPaymentStatusAsync(new Guid(orderId), OrderPaymentStatus.Cancelled,cToken);
                 break;
             case "COMPLETED":
-                await _ordersService.SetPaymentStatus(new Guid(orderId), OrderPaymentStatus.Paid,cToken);
+                await _ordersService.SetPaymentStatusAsync(new Guid(orderId), OrderPaymentStatus.Paid,cToken);
                 break;
         }
 

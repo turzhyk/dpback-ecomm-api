@@ -30,7 +30,7 @@ namespace DPBack.API.Controllers
         // Use with caution (could be a lot of data)
         public async Task<ActionResult<List<OrderResponse>>> GetOrdersAsync(CancellationToken cToken)
         {
-            var result = await _service.GetAllOrders(cToken);
+            var result = await _service.GetAllAsync(cToken);
             
             return Ok(result);
         }
@@ -38,7 +38,7 @@ namespace DPBack.API.Controllers
         [Authorize]
         public async Task<ActionResult<List<OrderResponse>>> GetOrdersFiltered(OrdersFilteredRequestDto request,CancellationToken cToken)
         {
-            var respose = await _service.GetOrdersFiltered(request, cToken);
+            var respose = await _service.GetFilteredAsync(request, cToken);
             return Ok(respose);
         }
         [HttpGet("{id}")]
@@ -46,14 +46,14 @@ namespace DPBack.API.Controllers
         public async Task<ActionResult<OrderResponse>> GetOrderByIdAsync(Guid id, CancellationToken cToken)
         {
             var userId = GetCurrentUserId();
-            var result = await _service.GetOrderById(userId, id, cToken);
+            var result = await _service.GetByIdAsync(userId, id, cToken);
             return Ok(result);
         }
         [HttpPut("{id}/assigned")]
         [Authorize(Roles = "Admin, Worker")]
         public async Task<ActionResult> AssignOrderTo(Guid id, [FromBody] AssignOrderRequest request, CancellationToken cToken)
         {
-            await _service.AssignToAsync(id, request.AuthorLogin, cToken);
+            await _service.AssignToUserAsync(id, request.AuthorLogin, cToken);
             return Ok();
         }
 
@@ -63,7 +63,7 @@ namespace DPBack.API.Controllers
         {
             var userId = GetCurrentUserId();
 
-            await _service.ChangeStatus(id, userId.ToString(), request.Status, cToken);
+            await _service.ChangeStatusAsync(id, userId.ToString(), request.Status, cToken);
             return Ok();
         }
       
@@ -71,7 +71,7 @@ namespace DPBack.API.Controllers
         public async Task<ActionResult<CreateOrderResponse>> CreateOrder([FromBody] CreateOrderRequest request, CancellationToken cToken)
         {
             // var userId = GetCurrentUserId();
-            var response = await _service.CreateOrder(Guid.NewGuid(),request, cToken);
+            var response = await _service.CreateAsync(Guid.NewGuid(),request, cToken);
             return Ok(response);
         }
 
@@ -80,7 +80,7 @@ namespace DPBack.API.Controllers
         {
             // var userId = GetCurrentUserId();
             // var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var status = await _service.GetPaymentStatus(id, cToken);
+            var status = await _service.GetPaymentStatusAsync(id, cToken);
             var response = new GetOrderPaymentStatusResponse
                 { PaymentStatus = status };
             return Ok(response);
