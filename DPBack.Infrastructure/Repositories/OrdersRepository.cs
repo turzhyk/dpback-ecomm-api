@@ -11,18 +11,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DPBack.Infrastructure.Repositories
 {
-    public class OrdersRepository : IOrdersRepository
+    public class OrdersRepository(OrderStoreDbContext context, ProductConfigMapperFactory mapper)
+        : IOrdersRepository
 
     {
-        private readonly OrderStoreDbContext _context;
-        private readonly ProductConfigMapperFactory _mapper;
-
-        public OrdersRepository(OrderStoreDbContext context, ProductConfigMapperFactory mapper)
-        {
-            _context = context;
-            _mapper = mapper;
-        }
-
         private static Order MapToOrder(OrderEntity e, ProductConfigMapperFactory mapper)
         {
             var items = e.Items.Select(i => new OrderItem
@@ -30,7 +22,9 @@ namespace DPBack.Infrastructure.Repositories
                 Id = i.Id,
                 Quantity = i.Quantity,
                 Type = i.Type,
-                Options = mapper.Map(i.Type,  JsonSerializer.Deserialize<JsonElement>(i.Options)),
+                Options = string.IsNullOrEmpty(i.Options)
+                    ? null
+                    : mapper.Map(i.Type, JsonSerializer.Deserialize<JsonElement>(i.Options)),
             }).ToList();
             var history = e.History.Select(h => new OrderHistoryElement
             {
@@ -62,7 +56,7 @@ namespace DPBack.Infrastructure.Repositories
         public async Task<Order?> GetById(Guid id, CancellationToken cToken)
         {
             var orderEntity =
-                await _context.Orders
+                await context.Orders
                     .AsNoTracking()
                     .Include(o => o.Items)
                     .Include(o => o.History)
@@ -70,12 +64,12 @@ namespace DPBack.Infrastructure.Repositories
                     .FirstOrDefaultAsync(cToken);
             if (orderEntity == null)
                 return null;
-            return MapToOrder(orderEntity, _mapper);
+            return MapToOrder(orderEntity, mapper);
         }
 
         public async Task<int> Count(CancellationToken cToken)
         {
-            var count = await _context.Orders
+            var count = await context.Orders
                 .AsQueryable()
                 .CountAsync(cToken);
             return count;
@@ -84,7 +78,7 @@ namespace DPBack.Infrastructure.Repositories
         public async Task<List<Order>> GetAll(CancellationToken cToken, int skip = 0, int take = 20)
         {
             var orderEntities =
-                await _context.Orders
+                await context.Orders
                     .AsNoTracking()
                     .Skip(skip)
                     .Take(take)
@@ -93,7 +87,7 @@ namespace DPBack.Infrastructure.Repositories
                     .OrderByDescending(x => x.CreatedAt)
                     .ToListAsync(cToken);
 
-            return orderEntities.Select(x => MapToOrder(x, _mapper)).ToList();
+            return orderEntities.Select(x => MapToOrder(x, mapper)).ToList();
         }
 
         public async Task<Guid> Create(Order order, CancellationToken cToken)
@@ -130,24 +124,24 @@ namespace DPBack.Infrastructure.Repositories
                 AddressSnapshot = "",
                 Status = order.Status
             };
-            await _context.Orders.AddAsync(orderEntity, cToken);
-            await _context.SaveChangesAsync(cToken);
+            await context.Orders.AddAsync(orderEntity, cToken);
+            await context.SaveChangesAsync(cToken);
             return order.Id;
         }
 
         public async Task SetPaymentStatus(Guid orderId, OrderPaymentStatus status, CancellationToken cToken)
         {
-            var order = await _context.Orders
+            var order = await context.Orders
                 .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
             if (order == null)
                 throw new Exception($"No order found with id {orderId}");
             order.PaymentStatus = status;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         public async Task<OrderPaymentStatus?> GetPaymentStatus(Guid orderId, CancellationToken cToken)
         {
-            var order = await _context.Orders
+            var order = await context.Orders
                 .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
             if (order == null)
@@ -159,7 +153,7 @@ namespace DPBack.Infrastructure.Repositories
         public async Task ChangeStatus(Guid orderId, string author, OrderStatus status, string newAuthor,
             CancellationToken cToken)
         {
-            var order = await _context.Orders
+            var order = await context.Orders
                 .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
             if (order == null)
                 throw new Exception($"No order found with id {orderId}");
@@ -167,7 +161,7 @@ namespace DPBack.Infrastructure.Repositories
 
             order.AssignedTo = newAuthor;
 
-            _context.OrderStatusHistories.Add(new OrderHistoryElementEntity
+            context.OrderStatusHistories.Add(new OrderHistoryElementEntity
             {
                 Id = Guid.NewGuid(),
                 OrderId = orderId,
@@ -175,7 +169,7 @@ namespace DPBack.Infrastructure.Repositories
                 Status = status,
                 ChangedAt = DateTime.UtcNow
             });
-            await _context.SaveChangesAsync(cToken);
+            await context.SaveChangesAsync(cToken);
         }
 
         public async Task AssignOrderWithStatus(
@@ -183,7 +177,7 @@ namespace DPBack.Infrastructure.Repositories
             string author,
             OrderHistoryElement historyElement, CancellationToken cToken)
         {
-            var order = await _context.Orders
+            var order = await context.Orders
                 .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
 
             if (order == null)
@@ -191,7 +185,7 @@ namespace DPBack.Infrastructure.Repositories
 
             order.AssignedTo = author;
 
-            _context.OrderStatusHistories.Add(new OrderHistoryElementEntity
+            context.OrderStatusHistories.Add(new OrderHistoryElementEntity
             {
                 Id = Guid.NewGuid(),
                 OrderId = orderId,
@@ -200,14 +194,14 @@ namespace DPBack.Infrastructure.Repositories
                 ChangedAt = historyElement.ChangedAt,
             });
 
-            await _context.SaveChangesAsync(cToken);
+            await context.SaveChangesAsync(cToken);
         }
 
 
         public async Task Update(Order order, CancellationToken cToken)
         {
             var orderEntity =
-                await _context.Orders
+                await context.Orders
                     .Include(o => o.History)
                     .FirstOrDefaultAsync(o => o.Id == order.Id, cToken);
             if (orderEntity == null)
@@ -219,13 +213,13 @@ namespace DPBack.Infrastructure.Repositories
                 AuthorLogin = order.History.Last().AuthorLogin,
                 ChangedAt = order.History.Last().ChangedAt,
             });
-            await _context.SaveChangesAsync(cToken);
+            await context.SaveChangesAsync(cToken);
         }
 
         public async Task<Guid> Update(Guid id, string description, decimal price, string assignedTo,
             CancellationToken cToken)
         {
-            await _context.Orders
+            await context.Orders
                 .Where(o => o.Id == id)
                 .ExecuteUpdateAsync(i => i
                     .SetProperty(o => o.Descriprion, o => description)
@@ -237,20 +231,20 @@ namespace DPBack.Infrastructure.Repositories
         public async Task<Guid> CreateCustomerAsync(Customer customer, CancellationToken cToken)
         {
             var entity = customer.ToEntity();
-            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(x => x.Phone == entity.Phone);
+            var existingCustomer = await context.Customers.FirstOrDefaultAsync(x => x.Phone == entity.Phone);
             if (existingCustomer != null)
                 return existingCustomer.Id;
             else
             {
-                await _context.Customers.AddAsync(entity, cToken);
-                await _context.SaveChangesAsync(cToken);
+                await context.Customers.AddAsync(entity, cToken);
+                await context.SaveChangesAsync(cToken);
                 return entity.Id;
             }
         }
 
         public async Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
         {
-            var entity = await _context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Phone == phone, cToken);
+            var entity = await context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Phone == phone, cToken);
             if (entity is null)
                 return null;
             return entity.ToModel();
@@ -258,27 +252,67 @@ namespace DPBack.Infrastructure.Repositories
 
         public async Task<List<Customer>> GetAllCustomersAsync(CancellationToken cToken)
         {
-            var entities = await _context.Customers.AsNoTracking().ToListAsync(cToken);
+            var entities = await context.Customers.AsNoTracking().ToListAsync(cToken);
             var result = entities.Select(x => x.ToModel()).ToList();
             return result;
         }
 
         public async Task<Guid> Delete(Guid id, CancellationToken cToken)
         {
-            await _context.Orders
+            await context.Orders
                 .Where(o => o.Id == id)
                 .ExecuteDeleteAsync(cToken);
             return id;
         }
 
+        public async Task<bool> CustomerByPhoneExistsAsync(string phone, CancellationToken cToken)
+        {
+            return await context.Customers.AnyAsync(x => x.Phone == phone, cToken);
+        }
+
+        public async Task<bool> CustomerExistsAsync(Guid id, CancellationToken cToken)
+        {
+            return await context.Customers.AnyAsync(x => x.Id == id, cToken);
+        }
+
         public async Task SuspendOrderAsync(Guid id, CancellationToken cToken)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(x => x.Id == id, cToken);
+            var order = await context.Orders.FirstOrDefaultAsync(x => x.Id == id, cToken);
             if (order is not null)
             {
                 order.IsSuspended = true;
-                await _context.SaveChangesAsync(cToken);
+                await context.SaveChangesAsync(cToken);
             }
+        }
+
+        public async Task<Guid> CreateOrderReceiptTaskAsync(OrderReceiptTask task, CancellationToken cToken)
+        {
+            await context.OrderReceiptTasks.AddAsync(new OrderReceiptTaskEntity
+                { Id = task.Id, OrderId = task.OrderId, Status = task.Status, CreatedAt = DateTime.UtcNow }, cToken);
+            await context.SaveChangesAsync(cToken);
+            return task.Id;
+        }
+
+        public async Task ChangeOrderReceiptStatusAsync(Guid orderReceiptId, OrderReceiptStatus status,
+            CancellationToken cToken)
+        {
+            await context.OrderReceiptTasks
+                .Where(o => o.Id == orderReceiptId)
+                .ExecuteUpdateAsync(i =>
+                    i.SetProperty(x => x.Status, status), cToken);
+
+            await context.SaveChangesAsync(cToken);
+        }
+
+        public async Task<List<Guid>> GetOrderReceiptTasksWithStatusAsync(OrderReceiptStatus status,
+            CancellationToken cToken)
+        {
+            var entities = await context.OrderReceiptTasks
+                .Where(x => x.Status == status)
+                .AsNoTracking()
+                .ToListAsync(cToken);
+            var result = entities.Select(x => x.Id).ToList();
+            return result;
         }
     }
 }

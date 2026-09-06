@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Threading.Channels;
 using DPBack.Application.Contracts;
 using DPBack.Application.Features;
 using DPBack.Application.Abstractions;
@@ -12,56 +13,53 @@ namespace DPBack.API.Controllers;
 
 [ApiController]
 [Route("api/payments")]
-public class PaymentController : Controller
+public class PaymentController(
+    IOptions<PayUOptions> options,
+    IOrdersService ordersService,
+    IPaymentService paymentService,
+    IReceiptService receiptService, ChannelWriter<Guid> channelWriter)
+    : Controller
 {
-    private readonly IOrdersService _ordersService;
-    private readonly IPaymentService _paymentService;
-    private readonly PayUOptions _options;
-
-    public PaymentController(IOptions<PayUOptions> options, IOrdersService ordersService, IPaymentService paymentService)
-    {
-        _options = options.Value;
-       
-        _ordersService = ordersService;
-        _paymentService = paymentService;
-    }
+    private readonly PayUOptions _options = options.Value;
 
     [HttpPost("notify")]
     public async Task<IActionResult> Notify(CancellationToken cToken)
-    { 
+    {
         Request.Body.Position = 0;
         using var reader = new StreamReader(Request.Body, leaveOpen: true);
         var rawBody = await reader.ReadToEndAsync(cToken);
         Request.Body.Position = 0;
-        
+
         var signatureHeader = Request.Headers["OpenPayu-Signature"];
         if (string.IsNullOrEmpty(signatureHeader))
             return BadRequest();
-            
-   
-        if(!SignatureVerificator.Verify(rawBody, signatureHeader, _options.SecondKey))
+
+
+        if (!SignatureVerificator.Verify(rawBody, signatureHeader, _options.SecondKey))
             return Unauthorized();
-        
+
         var dto = JsonSerializer.Deserialize<PayUWebhookDto>(rawBody);
         if (dto == null)
             return BadRequest("invalid notify data");
-        
+
         var orderId = dto.Order.ExtOrderId;
         var payuOrderId = dto.Order.OrderId;
         var status = dto.Order.Status;
-        
+
         switch (status)
         {
             case ("WAITING_FOR_CONFIRMATION"):
-                var currentStatus = await _ordersService.GetPaymentStatusAsync(new Guid(orderId),cToken);
+                var currentStatus = await ordersService.GetPaymentStatusAsync(new Guid(orderId), cToken);
                 if (currentStatus == OrderPaymentStatus.Waiting)
-                    await _paymentService.CapturePayment(payuOrderId);
+                    await paymentService.CapturePayment(payuOrderId);
                 break;
             case "CANCELED":
-                await _ordersService.SetPaymentStatusAsync(new Guid(orderId), OrderPaymentStatus.Cancelled,cToken);
+                await ordersService.SetPaymentStatusAsync(new Guid(orderId), OrderPaymentStatus.Cancelled, cToken);
                 break;
             case "COMPLETED":
-                await _ordersService.SetPaymentStatusAsync(new Guid(orderId), OrderPaymentStatus.Paid,cToken);
+                await ordersService.SetPaymentStatusAsync(new Guid(orderId), OrderPaymentStatus.Paid, cToken);
+                var taskId = await receiptService.CreateReceiptTaskAsync(new Guid(orderId), cToken);
+                await channelWriter.WriteAsync(taskId, cToken);
                 break;
         }
 

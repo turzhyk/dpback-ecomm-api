@@ -10,51 +10,37 @@ using Microsoft.Extensions.Logging;
 
 namespace DPBack.Application.Services
 {
-    public class OrdersService : IOrdersService
+    public class OrdersService(
+        IOrdersRepository ordersRepo,
+        IPaymentService paymentService,
+        IPriceCalcService priceCalcService,
+        ILogger<OrdersService> logger,
+        ProductConfigMapperFactory mapper)
+        : IOrdersService
 
     {
-        public static readonly Dictionary<OrderStatus, OrderStatus[]> AllowedTransitions = new()
+        private static readonly Dictionary<OrderStatus, OrderStatus[]> AllowedTransitions = new()
         {
-            { OrderStatus.New, new[] { OrderStatus.InProgress, OrderStatus.Cancelled } },
+            { OrderStatus.New, [OrderStatus.InProgress, OrderStatus.Cancelled] },
             {
-                OrderStatus.InProgress, new[]
-
-                    { OrderStatus.Produced, OrderStatus.InProgress }
+                OrderStatus.InProgress, [OrderStatus.Produced, OrderStatus.InProgress]
             },
             {
-                OrderStatus.Produced, new[] { OrderStatus.Packing, OrderStatus.ReadyForShipping }
+                OrderStatus.Produced, [OrderStatus.Packing, OrderStatus.ReadyForShipping]
             },
             {
-                OrderStatus.Packing, new[] { OrderStatus.ReadyForShipping }
+                OrderStatus.Packing, [OrderStatus.ReadyForShipping]
             },
-            { OrderStatus.ReadyForShipping, new[] { OrderStatus.InDelivery } },
-            { OrderStatus.InDelivery, new[] { OrderStatus.Done } },
+            { OrderStatus.ReadyForShipping, [OrderStatus.InDelivery] },
+            { OrderStatus.InDelivery, [OrderStatus.Done] },
             { OrderStatus.Done, [] }
         };
-
-        private readonly IOrdersRepository _repo;
-        private readonly IPaymentService _paymentService;
-        private readonly IPriceCalcService _priceService;
-        private readonly ILogger<OrdersService> _logger;
-        private readonly ProductConfigMapperFactory _mapper;
-
-
-        public OrdersService(IOrdersRepository ordersRepo, IPaymentService paymentService,
-            IPriceCalcService priceCalcService
-            , ILogger<OrdersService> logger, ProductConfigMapperFactory mapper)
-        {
-            _repo = ordersRepo;
-            _paymentService = paymentService;
-            _priceService = priceCalcService;
-            _logger = logger;
-            _mapper = mapper;
-        }
 
 
         public async Task<List<OrderResponse>> GetAllAsync(CancellationToken cToken)
         {
-            _logger.LogInformation("Getting all orders");
-            var orders = await _repo.GetAll(cToken, 0, 100);
+            logger.LogInformation("Getting all orders");
+            var orders = await ordersRepo.GetAll(cToken, 0, 100);
             var response = orders.Select(o =>
                 o.ToDto()).ToList();
             return response;
@@ -64,13 +50,13 @@ namespace DPBack.Application.Services
             CancellationToken cToken)
         {
             var skip = (request.PageNumber - 1) * request.PageSize;
-            _logger.LogInformation("Requesting {pageSize} orders for page nr. {pageNumber}",
+            logger.LogInformation("Requesting {pageSize} orders for page nr. {pageNumber}",
                 request.PageSize,
                 request.PageNumber);
 
-            var orders = await _repo.GetAll(cToken, skip, request.PageSize);
+            var orders = await ordersRepo.GetAll(cToken, skip, request.PageSize);
 
-            var totalCount = await _repo.Count(cToken);
+            var totalCount = await ordersRepo.Count(cToken);
             var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
             return new PagedResponse<OrderResponse>
             {
@@ -84,11 +70,11 @@ namespace DPBack.Application.Services
 
         public async Task<OrderResponse> GetByIdAsync(Guid userId, Guid orderId, CancellationToken cToken)
         {
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Getting order {orderId} for user {userId}",
                 orderId,
                 userId);
-            var order = await _repo.GetById(orderId, cToken);
+            var order = await ordersRepo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
 
@@ -98,19 +84,27 @@ namespace DPBack.Application.Services
         public async Task<CreateOrderResponse> CreateAsync(Guid userId, CreateOrderRequest request,
             CancellationToken cToken)
         {
-            _logger.LogInformation("Creating new order for user {userId}", userId);
+            logger.LogInformation("Creating new order for user {userId}", userId);
+            if (request.CustomerId is Guid customerId)
+            {
+                var customerExists = await ordersRepo.CustomerExistsAsync(customerId, cToken);
+                if (!customerExists)
+                    throw new CustomerDoesNotExistException($"customer {customerId} does not exist");
+            }
+
             var items = request.Items.Select(i => new OrderItem
             {
                 Id = Guid.NewGuid(),
                 Quantity = i.Quantity,
                 Type = i.Type,
-                Options = _mapper.Map(i.Type, i.Options),
+                Options = mapper.Map(i.Type, i.Options),
             }).ToList();
             decimal totalPrice = 0;
             foreach (var i in request.Items)
             {
-                totalPrice += _priceService.Calculate(i);
+                totalPrice += priceCalcService.Calculate(i);
             }
+
             var paymentStatus = request.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
             var (order, error) = Order.Create(
                 Guid.NewGuid(),
@@ -126,24 +120,25 @@ namespace DPBack.Application.Services
                 paymentStatus: paymentStatus,
                 null
             );
-            await _repo.Create(order, cToken);
+            await ordersRepo.Create(order, cToken);
             if (paymentStatus == OrderPaymentStatus.Paid)
             {
                 return new CreateOrderResponse(order.Id);
             }
             else
             {
-                var paymentUrl = await _paymentService.CreatePayment(order.Id.ToString(), totalPrice);
+                var paymentUrl = await paymentService.CreatePayment(order.Id.ToString(), totalPrice);
                 return new CreateOrderResponse(order.Id, paymentUrl);
             }
         }
 
-        public async Task ChangeStatusAsync(Guid orderId, string author, OrderStatus newStatus, CancellationToken cToken)
+        public async Task ChangeStatusAsync(Guid orderId, string author, OrderStatus newStatus,
+            CancellationToken cToken)
         {
-            var order = await _repo.GetById(orderId, cToken);
+            var order = await ordersRepo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
-            _logger.LogInformation("Changing {orderId} order status from {oldStatus} to {newStatus} by {author}",
+            logger.LogInformation("Changing {orderId} order status from {oldStatus} to {newStatus} by {author}",
                 orderId, order.Status, newStatus, author);
 
             // if (order.AssignedTo != author)
@@ -153,7 +148,7 @@ namespace DPBack.Application.Services
             if (AllowedTransitions[order.Status].Contains(newStatus))
             {
                 var newAuthor = newStatus == OrderStatus.InProgress ? author : "";
-                await _repo.ChangeStatus(orderId, author, newStatus, newAuthor, cToken);
+                await ordersRepo.ChangeStatus(orderId, author, newStatus, newAuthor, cToken);
             }
             else
                 throw new StatusChangeNotAllowedException();
@@ -161,8 +156,8 @@ namespace DPBack.Application.Services
 
         public async Task<OrderPaymentStatus> GetPaymentStatusAsync(Guid orderId, CancellationToken cToken)
         {
-            _logger.LogInformation("Getting order {orderId} payment status", orderId);
-            var order = await _repo.GetById(orderId, cToken);
+            logger.LogInformation("Getting order {orderId} payment status", orderId);
+            var order = await ordersRepo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
             return order.PaymentStatus;
@@ -170,24 +165,24 @@ namespace DPBack.Application.Services
 
         public async Task SetPaymentStatusAsync(Guid orderId, OrderPaymentStatus status, CancellationToken cToken)
         {
-            var order = await _repo.GetById(orderId, cToken);
+            var order = await ordersRepo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
             if (order.PaymentStatus == status)
                 throw new StatusChangeNotAllowedException();
 
-            _logger.LogInformation("Changing order {orderId} payment status from {oldStatus} to {newStatus}",
+            logger.LogInformation("Changing order {orderId} payment status from {oldStatus} to {newStatus}",
                 orderId, order.PaymentStatus, status);
-            await _repo.SetPaymentStatus(orderId, status, cToken);
+            await ordersRepo.SetPaymentStatus(orderId, status, cToken);
         }
 
         public async Task AssignToUserAsync(Guid orderId, string author, CancellationToken cToken)
         {
-            var order = await _repo.GetById(orderId, cToken);
+            var order = await ordersRepo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
 
-            await _repo.AssignOrderWithStatus(
+            await ordersRepo.AssignOrderWithStatus(
                 orderId,
                 author,
                 new OrderHistoryElement
@@ -202,15 +197,18 @@ namespace DPBack.Application.Services
             CancellationToken cToken)
         {
             var customer = new Customer
-                { Id = Guid.NewGuid(),Name = request.Name, Phone = request.Phone, Email = request.Email, UserId = Guid.Empty };
+            {
+                Id = Guid.NewGuid(), Name = request.Name, Phone = request.Phone, Email = request.Email,
+                UserId = Guid.Empty
+            };
 
-            var result = await _repo.CreateCustomerAsync(customer, cToken);
+            var result = await ordersRepo.CreateCustomerAsync(customer, cToken);
             return new CustomerResponseDto(customer.Id, customer.Name, customer.Phone, customer.Email);
         }
 
         public async Task<CustomersResponseDto> GetAllCustomersAsync(CancellationToken cToken)
         {
-            var customers = await _repo.GetAllCustomersAsync(cToken);
+            var customers = await ordersRepo.GetAllCustomersAsync(cToken);
             var result =
                 new CustomersResponseDto(customers.Select(x => new CustomerResponseDto(x.Id, x.Name, x.Phone, x.Email))
                     .ToList());
@@ -219,7 +217,7 @@ namespace DPBack.Application.Services
 
         public async Task<CustomerResponseDto?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
         {
-            var result = await _repo.GetCustomerByPhoneAsync(phone, cToken);
+            var result = await ordersRepo.GetCustomerByPhoneAsync(phone, cToken);
             if (result is null)
                 return null;
             return new CustomerResponseDto(result.Id, result.Name, result.Phone, result.Email);
@@ -229,13 +227,12 @@ namespace DPBack.Application.Services
 
         public async Task SuspendOrderAsync(Guid id, CancellationToken cToken)
         {
-            var order = await _repo.GetById(id, cToken);
+            var order = await ordersRepo.GetById(id, cToken);
             if (order is null)
                 throw new OrderDoesNotExistException(id);
             if (order.Status == OrderStatus.Done)
                 throw new StatusChangeNotAllowedException($"Unable to change order {id} status.");
-            await _repo.SuspendOrderAsync(id, cToken);
+            await ordersRepo.SuspendOrderAsync(id, cToken);
         }
-          
     }
 }

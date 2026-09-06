@@ -6,5 +6,6 @@ public enum OrderItemType
     Banner = 1,
     OpeningHoursSticker = 2,
     PhotoA4 = 3, 
-    Tshirt = 4
+    Tshirt = 4,
+    Mug = 5,
 }

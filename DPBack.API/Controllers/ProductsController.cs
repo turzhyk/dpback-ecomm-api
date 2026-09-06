@@ -5,19 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace DPBack.API.Controllers;
 [ApiController]
 [Route("/products")]
-public class ProductsController:ControllerBase
+public class ProductsController(IProductsService productsService) : ControllerBase
 
 {
-    private readonly IProductsService _productsService;
-
-    public ProductsController(IProductsService productsService)
-    {
-        _productsService = productsService;
-    }
     [HttpGet]
     public ActionResult<ProductListResponse> GetProducts()
     {
-        return _productsService.ListProducts();
+        return productsService.ListProducts();
     }
     
 }

@@ -7,23 +7,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DPBack.Infrastructure.Repositories;
 
-public class UsersRepository : IUsersRepository
+public class UsersRepository(UserStoreDbContext context) : IUsersRepository
 {
-    private readonly UserStoreDbContext _context;
-
-    public UsersRepository(UserStoreDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<bool> UserWithIdExistsAsync(Guid id, CancellationToken cToken)
     {
-        return await _context.Users.AnyAsync(x => x.Id == id, cToken);
+        return await context.Users.AnyAsync(x => x.Id == id, cToken);
     }
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cToken)
     {
-        var userEntity = await _context.Users.FirstOrDefaultAsync(u => u.Email == email, cToken);
+        var userEntity = await context.Users.FirstOrDefaultAsync(u => u.Email == email, cToken);
         if (userEntity == null)
             return null;
         return new User(userEntity.Id, userEntity.Login, userEntity.PasswordHash, userEntity.Email, userEntity.Role,
@@ -32,7 +25,7 @@ public class UsersRepository : IUsersRepository
 
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cToken)
     {
-        var userEntity = await _context.Users.FirstOrDefaultAsync(u => u.Id == id, cToken);
+        var userEntity = await context.Users.FirstOrDefaultAsync(u => u.Id == id, cToken);
         if (userEntity == null)
             return null;
         return new User(userEntity.Id, userEntity.Login, userEntity.PasswordHash, userEntity.Email, userEntity.Role,
@@ -42,14 +35,14 @@ public class UsersRepository : IUsersRepository
     public async Task<Guid> CreateAsync(User user, CancellationToken cToken)
     {
         var userEntity = new UserEntity(user.Id, user.Login, user.PasswordHash, user.Email, user.Role, user.CreatedAt);
-        await _context.Users.AddAsync(userEntity, cToken);
-        await _context.SaveChangesAsync(cToken);
+        await context.Users.AddAsync(userEntity, cToken);
+        await context.SaveChangesAsync(cToken);
         return user.Id;
     }
 
     public async Task<List<UserAddress>> GetAddressesByUserIdAsync(Guid id, CancellationToken cToken)
     {
-        var entities = await _context.Adresses
+        var entities = await context.Adresses
             .Where(address => address.UserId == id)
             .ToListAsync(cToken);
         if (entities.Count == 0)
@@ -64,18 +57,18 @@ public class UsersRepository : IUsersRepository
             address.BuildingNumber, address.ApartmentNumber, address.PostalCode, address.PhoneNumber, address.Email,
             address.Options);
 
-        await _context.Adresses.AddAsync(entity, cToken);
-        await _context.SaveChangesAsync(cToken);
+        await context.Adresses.AddAsync(entity, cToken);
+        await context.SaveChangesAsync(cToken);
     }
 
     public async Task<bool> AddressWithIdExists(Guid id, CancellationToken cToken)
     {
-        return await _context.Adresses.AnyAsync(x => x.Id == id, cToken);
+        return await context.Adresses.AnyAsync(x => x.Id == id, cToken);
     }
 
     public async Task<UserAddress?> GetAddressByIdAsync(Guid id, CancellationToken cToken)
     {
-        var result = await _context.Adresses
+        var result = await context.Adresses
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cToken);
         return result?.ToModel();
@@ -83,7 +76,7 @@ public class UsersRepository : IUsersRepository
 
     public async Task UpdateUserAddressAsync(Guid addressId, UserAddress address, CancellationToken cToken)
     {
-        var entity = await _context.Adresses
+        var entity = await context.Adresses
             .FirstOrDefaultAsync(x => x.Id == addressId, cToken);
         if (entity is null)
             throw new KeyNotFoundException("address not found");
@@ -96,7 +89,7 @@ public class UsersRepository : IUsersRepository
         entity.PhoneNumber = address.PhoneNumber;
         entity.Email = address.Email;
         entity.Options = address.Options;
-        await _context.SaveChangesAsync(cToken);
+        await context.SaveChangesAsync(cToken);
     }
 
 
@@ -104,12 +97,12 @@ public class UsersRepository : IUsersRepository
     {
         var tokenEntity = new RefreshTokenEntity
             { Id = Guid.NewGuid(), UserId = user.Id, Token = token, ExpiresAt = DateTime.UtcNow.AddDays(30) };
-        await _context.RefreshTokens.AddAsync(tokenEntity, cToken);
+        await context.RefreshTokens.AddAsync(tokenEntity, cToken);
     }
 
     public async Task<RefreshToken?> GetRefreshTokenByTokenAsync(string token, CancellationToken cToken)
     {
-        var entity = await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token, cToken);
+        var entity = await context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token, cToken);
         if (entity == null)
             return null;
         return new RefreshToken
@@ -119,7 +112,7 @@ public class UsersRepository : IUsersRepository
     public async Task<(RefreshToken?, User?)> GetRefreshTokenWithUserByTokenAsync(string token,
         CancellationToken cToken)
     {
-        var tokenEntity = await _context.RefreshTokens.Include(u => u.User)
+        var tokenEntity = await context.RefreshTokens.Include(u => u.User)
             .FirstOrDefaultAsync(x => x.Token == token, cToken);
         if (tokenEntity == null)
             return (null, null);
@@ -133,20 +126,20 @@ public class UsersRepository : IUsersRepository
 
     public async Task SetTokenRevokedAsync(string token, CancellationToken cToken)
     {
-        var entity = await _context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token, cToken);
+        var entity = await context.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token, cToken);
         if (entity != null)
             entity.IsRevoked = true;
-        await _context.SaveChangesAsync(cToken);
+        await context.SaveChangesAsync(cToken);
     }
 
     public async Task<int> DeleteExpiredTokensAsync(CancellationToken cToken)
     {
         var now = DateTime.UtcNow;
-        return await _context.RefreshTokens.Where(x => x.ExpiresAt < now).ExecuteDeleteAsync(cToken);
+        return await context.RefreshTokens.Where(x => x.ExpiresAt < now).ExecuteDeleteAsync(cToken);
     }
 
     public async Task SaveChangesAsync(CancellationToken cToken)
     {
-        await _context.SaveChangesAsync(cToken);
+        await context.SaveChangesAsync(cToken);
     }
 }

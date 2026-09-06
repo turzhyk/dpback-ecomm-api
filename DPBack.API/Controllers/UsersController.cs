@@ -10,10 +10,8 @@ namespace DPBack.API.Controllers;
 
 [ApiController]
 [Route("users")]
-public class UsersController : ControllerBase
+public class UsersController(IUserService service) : ControllerBase
 {
-    private readonly IUserService _service;
-
     private Guid GetCurrentUserId()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -25,15 +23,10 @@ public class UsersController : ControllerBase
         return Guid.Parse(userId);
     }
 
-    public UsersController(IUserService service)
-    {
-        _service = service;
-    }
-    
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateUser(UserCreateRequest request, CancellationToken cToken)
     {
-        var id = await _service.CreateUserAsync(request, cToken);
+        var id = await service.CreateUserAsync(request, cToken);
         return Ok(id);
     }
 
@@ -42,7 +35,7 @@ public class UsersController : ControllerBase
     {
         try
         {
-            var result = await _service.Login(request, cToken);
+            var result = await service.Login(request, cToken);
             return Ok(result);
         }
         catch (UnauthorizedAccessException e)
@@ -54,14 +47,14 @@ public class UsersController : ControllerBase
     [HttpGet("refresh")]
     public async Task<ActionResult<UserLoginResponse>> RefreshToken(string oldRefreshToken, CancellationToken cToken)
     {
-        var result = await _service.RefreshToken(oldRefreshToken, cToken);
+        var result = await service.RefreshToken(oldRefreshToken, cToken);
         return Ok(result);
     }
     [Authorize]
     [HttpGet("{id}")]
     public async Task<ActionResult<UserResponse>> GetUserById(Guid id, CancellationToken cToken)
     {
-        var userDto = _service.GetByIdAsync(id, cToken);
+        var userDto = service.GetByIdAsync(id, cToken);
         return Ok();
     }
 
@@ -70,7 +63,7 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<List<UserAddressResponseDto>>> GetUserAddresses(CancellationToken cToken)
     {
         var userId = GetCurrentUserId();
-        var result = await  _service.GetAddressesByUserIdAsync(userId, cToken);
+        var result = await  service.GetAddressesByUserIdAsync(userId, cToken);
         return Ok(result);
     }
     [Authorize]
@@ -79,7 +72,7 @@ public class UsersController : ControllerBase
     {
         var userId = GetCurrentUserId();
 
-        await _service.AddUserAddressAsync(userId, request, cToken);
+        await service.AddUserAddressAsync(userId, request, cToken);
         return Ok();
     }
     [HttpPatch("addresses/{addressId}")]

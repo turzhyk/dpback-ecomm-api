@@ -24,6 +24,13 @@ namespace DPBack.Application.Abstractions
         Task<Guid> CreateCustomerAsync(Customer customer, CancellationToken cToken);
         Task<List<Customer>> GetAllCustomersAsync(CancellationToken cancellationToken);
         Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken);
+        Task<bool> CustomerByPhoneExistsAsync(string phone, CancellationToken cToken);
+        Task<bool> CustomerExistsAsync(Guid id, CancellationToken cToken);
         Task SuspendOrderAsync(Guid id, CancellationToken cToken);
+        
+        Task<Guid> CreateOrderReceiptTaskAsync(OrderReceiptTask orderReceiptTask, CancellationToken cToken);
+        Task ChangeOrderReceiptStatusAsync(Guid orderReceiptId, OrderReceiptStatus status, CancellationToken cToken);
+        Task<List<Guid>> GetOrderReceiptTasksWithStatusAsync(OrderReceiptStatus status, CancellationToken cToken);
     }
+    
 }

@@ -6,17 +6,12 @@ namespace DPBack.API.Controllers;
 
 [Route("api/delivery")]
 [ApiController]
-public class DeliveryController:ControllerBase
+public class DeliveryController(IOrdersService ordersService) : ControllerBase
 {
-    private IOrdersService _ordersService;
-    public DeliveryController( IOrdersService ordersService)
-    {
-        _ordersService = ordersService;
-    }
     [HttpGet("list")]
     public async Task<ActionResult<List<DeliveryOptionResposeDto>>> GetList()
     {
-        var result = await _ordersService.GetDeliveryOptionList();
+        var result = await ordersService.GetDeliveryOptionList();
         return Ok(result);
     }
     

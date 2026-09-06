@@ -32,8 +32,8 @@
     env_file:
         - .env
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      DOTNET_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: ${ENVIRONMENT:-Development}
+      DOTNET_ENVIRONMENT: ${ENVIRONMENT:-Development}
       
       
 

@@ -10,24 +10,20 @@ using Microsoft.Extensions.Options;
 
 namespace DPBack.Infrastructure.Payments;
 
-public class PayUService : IPaymentService
+public class PayUService(
+    IPaymentTokenProvider tokenProvider,
+    HttpClient client,
+    IOptions<PayUOptions> options,
+    ILogger<PayUService> logger)
+    : IPaymentService
 {
-    private readonly IPaymentTokenProvider _tokenProvider;
-    private readonly HttpClient _client;
-    private readonly PayUOptions _options;
-    private readonly ILogger<PayUService> _logger;
-
-    public PayUService(IPaymentTokenProvider tokenProvider, HttpClient client, IOptions<PayUOptions> options, ILogger<PayUService> logger)
-    {
-        _tokenProvider = tokenProvider; 
-        _client = client;
-        _options = options.Value;
-        _logger = logger;
-    }
+    private readonly HttpClient _client = client;
+    private readonly PayUOptions _options = options.Value;
+    private readonly ILogger<PayUService> _logger = logger;
 
     public async Task<string> CreatePayment(string orderId, decimal totalPrice)
     {
-        var token = await _tokenProvider.GetToken();
+        var token = await tokenProvider.GetToken();
         var handler = new HttpClientHandler
         {
             AllowAutoRedirect = false 
@@ -73,7 +69,7 @@ public class PayUService : IPaymentService
 
     public async Task CapturePayment(string orderId)
     {
-        var token = await _tokenProvider.GetToken();
+        var token = await tokenProvider.GetToken();
         var handler = new HttpClientHandler
         {
             AllowAutoRedirect = false 

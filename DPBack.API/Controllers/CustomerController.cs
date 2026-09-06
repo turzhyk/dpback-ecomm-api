@@ -7,20 +7,13 @@ namespace DPBack.API.Controllers;
 
 [Route("customers")]
 [ApiController]
-public class CustomerController : ControllerBase
+public class CustomerController(IOrdersService ordersService) : ControllerBase
 {
-    private readonly IOrdersService _ordersService;
-
-    public CustomerController(IOrdersService ordersService)
-    {
-        _ordersService = ordersService;
-    }
-
     [Authorize]
     [HttpPost]
     public async Task<ActionResult<CustomerResponseDto>> Create([FromBody] CustomerCreateRequest request, CancellationToken cToken)
     {
-        var result = await _ordersService.CreateCustomerAsync(request, cToken);
+        var result = await ordersService.CreateCustomerAsync(request, cToken);
         return Ok(result);
     }
 
@@ -35,7 +28,7 @@ public class CustomerController : ControllerBase
     [HttpGet("by-phone/{phone}")]
     public async Task<ActionResult<CustomerResponseDto?>> GetByPhone(string phone, CancellationToken cToken)
     {
-        var result = await _ordersService.GetCustomerByPhoneAsync(phone, cToken);
+        var result = await ordersService.GetCustomerByPhoneAsync(phone, cToken);
         return new JsonResult(result);
     }
 }

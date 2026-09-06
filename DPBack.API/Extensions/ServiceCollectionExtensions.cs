@@ -1,4 +1,5 @@
-﻿using DPBack.Application.Abstractions;
+﻿using System.Threading.Channels;
+using DPBack.Application.Abstractions;
 using DPBack.Application.Mappers;
 using DPBack.Application.Mappers.Config;
 using DPBack.Application.Options.Pricing;
@@ -15,7 +16,7 @@ namespace DPBack.API.Extensions;
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services
-        )
+    )
     {
         services.AddScoped<IOrdersService, OrdersService>();
         services.AddScoped<IOrdersRepository, OrdersRepository>();
@@ -24,13 +25,19 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUsersRepository, UsersRepository>();
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IProductsService, ProductsService>();
+        services.AddScoped<IReceiptService, OrderReceiptService>();
 
-       
+
         services.AddScoped<IPriceCalculator, BusinesscardCalculator>();
         services.AddScoped<IPriceCalculator, OpeningHoursStickerCalculator>();
         services.AddScoped<IPriceCalculator, TshirtCalculator>();
-        
-        //Config
+
+        var channel = Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions
+            { SingleReader = true});
+        services.AddSingleton(channel);
+        services.AddSingleton(channel.Writer);
+        services.AddSingleton(channel.Reader);
+    //Config
         services.AddScoped<IProductConfigMapper, BusinesscardsConfigMapper>();
         services.AddScoped<IProductConfigMapper, TshirtConfigMapper>();
 

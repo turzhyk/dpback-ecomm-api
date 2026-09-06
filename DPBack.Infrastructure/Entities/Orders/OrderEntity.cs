@@ -1,4 +1,5 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 
@@ -22,5 +23,6 @@ namespace DPBack.Infrastructure.Entities
         public List<OrderItemEntity> Items { get; set; } 
 
         public List<OrderHistoryElementEntity> History { get; set; } = new();
+        [Timestamp] public byte[] RowVersion { get; set; } = null!;
     }
 }
