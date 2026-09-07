@@ -9,7 +9,7 @@ namespace DPBack.Application.Abstractions
 {
     public interface IOrdersService
     {
-        Task<CreateOrderResponse> CreateAsync(Guid userId,CreateOrderRequest createOrder, CancellationToken cToken);
+        Task<CreateOrderResponse> CreateAsync(Guid? userId,CreateOrderRequest createOrder, CancellationToken cToken);
         Task<List<OrderResponse>> GetAllAsync(CancellationToken cToken);
         Task<PagedResponse<OrderResponse>> GetFilteredAsync(OrdersFilteredRequestDto request, CancellationToken cToken);
         Task<OrderResponse> GetByIdAsync(Guid userId,Guid orderId, CancellationToken cToken);

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DPBack.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderStoreDbContext))]
-    [Migration("20260818140752_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260907115110_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -109,6 +109,12 @@ namespace DPBack.Infrastructure.Migrations
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("integer");
 
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -174,6 +180,28 @@ namespace DPBack.Infrastructure.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderReceiptTaskEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderReceiptTasks");
+                });
+
             modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderHistoryElementEntity", b =>
                 {
                     b.HasOne("DPBack.Infrastructure.Entities.OrderEntity", "Order")
@@ -189,6 +217,17 @@ namespace DPBack.Infrastructure.Migrations
                 {
                     b.HasOne("DPBack.Infrastructure.Entities.OrderEntity", "Order")
                         .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderReceiptTaskEntity", b =>
+                {
+                    b.HasOne("DPBack.Infrastructure.Entities.OrderEntity", "Order")
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

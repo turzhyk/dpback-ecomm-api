@@ -6,4 +6,5 @@ namespace DPBack.Application.Abstractions;
 public interface IPriceCalcService
 {
      decimal Calculate(OrderItemRequest request);
+     decimal Calculate(OrderItem item);
 }

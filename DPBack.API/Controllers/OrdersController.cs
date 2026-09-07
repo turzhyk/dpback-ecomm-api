@@ -10,13 +10,11 @@ namespace DPBack.API.Controllers
     [Route("orders")]
     public class OrdersController(IOrdersService service) : ControllerBase
     {
-        private Guid GetCurrentUserId()
+        private Guid? GetCurrentUserId()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
-            {
-                throw new UnauthorizedAccessException("No active user found");
-            }
+                return null;
             return Guid.Parse(userId);
         }
 
@@ -41,7 +39,10 @@ namespace DPBack.API.Controllers
         public async Task<ActionResult<OrderResponse>> GetOrderByIdAsync(Guid id, CancellationToken cToken)
         {
             var userId = GetCurrentUserId();
-            var result = await service.GetByIdAsync(userId, id, cToken);
+            if (userId is not Guid user)
+                throw new UnauthorizedAccessException();
+            
+            var result = await service.GetByIdAsync(user, id, cToken);
             return Ok(result);
         }
         [HttpPut("{id}/assigned")]
@@ -65,8 +66,9 @@ namespace DPBack.API.Controllers
         [HttpPost]
         public async Task<ActionResult<CreateOrderResponse>> CreateOrder([FromBody] CreateOrderRequest request, CancellationToken cToken)
         {
+            var userId = GetCurrentUserId();
             // var userId = GetCurrentUserId();
-            var response = await service.CreateAsync(Guid.NewGuid(),request, cToken);
+            var response = await service.CreateAsync(userId, request, cToken);
             return Ok(response);
         }
 

@@ -23,6 +23,6 @@ namespace DPBack.Infrastructure.Entities
         public List<OrderItemEntity> Items { get; set; } 
 
         public List<OrderHistoryElementEntity> History { get; set; } = new();
-        [Timestamp] public byte[] RowVersion { get; set; } = null!;
+        public uint  RowVersion { get; set; }
     }
 }

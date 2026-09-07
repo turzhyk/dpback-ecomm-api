@@ -28,8 +28,12 @@ namespace DPBack.Infrastructure.Contexts
             modelBuilder.Entity<OrderEntity>()
                 .Property(o => o.OrderNumber)
                 .HasDefaultValueSql("nextval('\"OrderNumbers\"')");
-            modelBuilder.Entity<OrderEntity>().Property(p => p.RowVersion).IsRowVersion().HasColumnName("xmin")
-                .HasColumnType("xid");
+            modelBuilder.Entity<OrderEntity>()
+                .Property(p => p.RowVersion)
+                .IsRowVersion()
+                .HasColumnName("xmin");
+
+
             modelBuilder.Entity<CustomerEntity>().HasIndex(x => x.Phone).IsUnique();
             modelBuilder.Entity<OrderItemEntity>()
                 .Property(x => x.Options)

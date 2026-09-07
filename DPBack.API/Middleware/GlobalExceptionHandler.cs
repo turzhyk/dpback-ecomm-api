@@ -32,7 +32,7 @@ public sealed class GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalE
             KeyNotFoundException  => (StatusCodes.Status404NotFound, "Not found"),
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"), 
             StatusChangeNotAllowedException => (StatusCodes.Status409Conflict, "Status change not allowed"),
-           
+            CustomerDoesNotExistException => (StatusCodes.Status404NotFound, "Customer does not exist"),
             InvalidJsonValuesException => (StatusCodes.Status400BadRequest, "Invalid Json Value"),
             OrderDoesNotExistException => (StatusCodes.Status404NotFound, "Order does not exist"),
             _ => (StatusCodes.Status500InternalServerError, "Internal server error")

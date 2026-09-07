@@ -15,7 +15,7 @@ namespace DPBack.Application.Services
         IPaymentService paymentService,
         IPriceCalcService priceCalcService,
         ILogger<OrdersService> logger,
-        ProductConfigMapperFactory mapper)
+        ProductConfigMapperFactory optionsMapper)
         : IOrdersService
 
     {
@@ -81,44 +81,62 @@ namespace DPBack.Application.Services
             return order.ToDto();
         }
 
-        public async Task<CreateOrderResponse> CreateAsync(Guid userId, CreateOrderRequest request,
+        public async Task<CreateOrderResponse> CreateAsync(Guid? userId, CreateOrderRequest request,
             CancellationToken cToken)
         {
             logger.LogInformation("Creating new order for user {userId}", userId);
-            if (request.CustomerId is Guid customerId)
+            var authorId = userId ?? Guid.NewGuid();
+            var customerId = request.CustomerId ?? Guid.NewGuid();
+            if (request.CustomerId is null)
+                throw new CustomerDoesNotExistException("customer does not exist");
+            if (request.CustomerId is Guid _customerId)
             {
-                var customerExists = await ordersRepo.CustomerExistsAsync(customerId, cToken);
+                var customerExists = await ordersRepo.CustomerExistsAsync(_customerId, cToken);
                 if (!customerExists)
-                    throw new CustomerDoesNotExistException($"customer {customerId} does not exist");
+                    throw new CustomerDoesNotExistException($"customer {_customerId} does not exist");
             }
+
+           
 
             var items = request.Items.Select(i => new OrderItem
             {
                 Id = Guid.NewGuid(),
                 Quantity = i.Quantity,
                 Type = i.Type,
-                Options = mapper.Map(i.Type, i.Options),
+                Options = optionsMapper.Map(i.Type, i.Options),
             }).ToList();
             decimal totalPrice = 0;
-            foreach (var i in request.Items)
+            foreach (var i in items)
             {
-                totalPrice += priceCalcService.Calculate(i);
+                var price = priceCalcService.Calculate(i);
+                i.PricePerUnit = price / i.Quantity;
+                totalPrice += price;
             }
 
             var paymentStatus = request.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
+            var orderId = Guid.NewGuid();
+            var initHistoryElement = new OrderHistoryElement
+            {
+                OrderId = orderId,
+                Status = OrderStatus.New,
+                ChangedAt = DateTime.UtcNow,
+                AuthorLogin = userId?.ToString() ?? "-",
+                Id = Guid.NewGuid()
+            };
+            var history = new List<OrderHistoryElement> { initHistoryElement };
             var (order, error) = Order.Create(
-                Guid.NewGuid(),
+                orderId,
                 0,
                 request.Desc,
                 totalPrice,
-                userId,
+                customerId,
                 items,
-                "",
+                authorId,
                 DateTime.UtcNow,
                 false,
                 status: OrderStatus.New,
                 paymentStatus: paymentStatus,
-                null
+                history
             );
             await ordersRepo.Create(order, cToken);
             if (paymentStatus == OrderPaymentStatus.Paid)

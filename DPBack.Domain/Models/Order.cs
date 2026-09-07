@@ -5,17 +5,15 @@ using DPBack.Domain.Enums;
 
 namespace DPBack.Domain.Models
 {
-  
-
     public class Order
     {
-        public Order(Guid id, 
-            int orderNumber, 
+        public Order(Guid id,
+            int orderNumber,
             string description,
             decimal price,
             Guid customerId,
             List<OrderItem> items,
-            string assignedTo,
+            Guid assignedTo,
             DateTime createdAt,
             bool isSuspended,
             OrderStatus status,
@@ -42,7 +40,7 @@ namespace DPBack.Domain.Models
 
         public decimal TotalPrice { get; }
         public Guid CustomerId { get; }
-        public string AssignedTo { get; }
+        public Guid AssignedTo { get; }
 
         public bool IsSuspended { get; }
         public OrderStatus Status { get; }
@@ -54,13 +52,15 @@ namespace DPBack.Domain.Models
         public List<OrderHistoryElement> History { get; set; }
             = new();
 
-        public static (Order Order, string Error) Create(Guid id, int number, string description, decimal price,Guid customerId,
-            List<OrderItem> items, string assignedTo,
+        public static (Order Order, string Error) Create(Guid id, int number, string description, decimal price,
+            Guid customerId,
+            List<OrderItem> items, Guid assignedTo,
             DateTime createdAt, bool suspended, OrderStatus status, OrderPaymentStatus paymentStatus,
             List<OrderHistoryElement> history)
         {
             var error = string.Empty;
-            var order = new Order(id, number, description, price, customerId, items, assignedTo, createdAt, suspended, status,
+            var order = new Order(id, number, description, price, customerId, items, assignedTo, createdAt, suspended,
+                status,
                 paymentStatus, history);
             return (order, error);
         }

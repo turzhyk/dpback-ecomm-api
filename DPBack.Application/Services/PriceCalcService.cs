@@ -20,4 +20,12 @@ public class PriceCalcService(PriceCalculatorFactory factory, ProductConfigMappe
         var result = calculator.Calculate(config);
         return result;
     }
+    public decimal Calculate(OrderItem item)
+    {
+        if (item.Options is null)
+            return 0;
+        var calculator = factory.Get(item.Type);
+        var result = calculator.Calculate(item.Options);
+        return result;
+    }
 }

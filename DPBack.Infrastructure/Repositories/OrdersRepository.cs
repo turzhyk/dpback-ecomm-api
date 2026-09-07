@@ -41,7 +41,7 @@ namespace DPBack.Infrastructure.Repositories
                 e.TotalPrice,
                 e.CustomerId,
                 items,
-                e.AssignedTo,
+                new Guid(e.AssignedTo),
                 e.CreatedAt,
                 e.IsSuspended,
                 e.Status,
@@ -92,33 +92,33 @@ namespace DPBack.Infrastructure.Repositories
 
         public async Task<Guid> Create(Order order, CancellationToken cToken)
         {
-            var initHistoryElement = new OrderHistoryElementEntity
-            {
-                OrderId = order.Id,
-                Status = OrderStatus.New,
-                ChangedAt = DateTime.UtcNow,
-                AuthorLogin = "-",
-                Id = Guid.NewGuid()
-            };
-            List<OrderHistoryElementEntity> history = new List<OrderHistoryElementEntity>();
-            history.Add(initHistoryElement);
+           
             var items = order.Items.Select(i => new OrderItemEntity
             {
                 Id = i.Id,
                 Quantity = i.Quantity,
                 Type = i.Type,
+                PricePerUnit = i.PricePerUnit,
                 Options = i.Options is null
                     ? null
                     : JsonSerializer.Serialize(i.Options, i.Options.GetType()),
+            }).ToList();
+            var historyEntities = order.History.Select(x => new OrderHistoryElementEntity
+            {
+                Id = x.Id,
+                AuthorLogin = x.AuthorLogin,
+                OrderId = x.OrderId,
+                Status = x.Status,
+                ChangedAt = x.ChangedAt
             }).ToList();
             var orderEntity = new OrderEntity
             {
                 Id = order.Id,
                 Descriprion = order.Description,
                 TotalPrice = order.TotalPrice,
-                AssignedTo = order.AssignedTo,
+                AssignedTo = order.AssignedTo.ToString(),
                 Items = items,
-                History = history,
+                History = historyEntities,
                 CreatedAt = order.CreatedAt,
                 PaymentStatus = order.PaymentStatus,
                 AddressSnapshot = "",
