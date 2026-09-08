@@ -19,7 +19,7 @@ public class OpeningHoursStickerCalculator : IPriceCalculator
 
     public OrderItemType Type => OrderItemType.OpeningHoursSticker;
 
-    public decimal Calculate(ProductConfig abstractConfig)
+    public decimal CalculateUnitPrice(ProductConfig abstractConfig)
     {
         if (abstractConfig == null)
             throw new Exception("Invalid businesscard configurations");

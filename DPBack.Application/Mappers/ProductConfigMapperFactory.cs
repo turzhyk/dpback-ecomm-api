@@ -26,7 +26,6 @@ public class ProductConfigMapperFactory
     }
     public IProductConfigMapper? Get(OrderItemType type)
     {
-        
         return _mappers.GetValueOrDefault(type);
     }
 }

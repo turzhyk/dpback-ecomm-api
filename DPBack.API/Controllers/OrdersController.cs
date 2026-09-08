@@ -8,7 +8,7 @@ namespace DPBack.API.Controllers
 {
     [ApiController]
     [Route("orders")]
-    public class OrdersController(IOrdersService service) : ControllerBase
+    public class OrdersController(IOrdersService service, IReceiptService receiptService) : ControllerBase
     {
         private Guid? GetCurrentUserId()
         {
@@ -89,6 +89,13 @@ namespace DPBack.API.Controllers
         {
             await service.SuspendOrderAsync(id, cToken);
             return Ok();
+        }
+        [HttpGet("{id}/receipt")]
+        public async Task<IActionResult> GetReceipt([FromRoute]Guid id, CancellationToken cToken)
+        {
+            var result =await receiptService.GetReceiptFileAsync(id, cToken);
+            var fileName = $"receipt_for_{id}.pdf";
+            return File(result, "application/pdf", fileName);
         }
     }
 }

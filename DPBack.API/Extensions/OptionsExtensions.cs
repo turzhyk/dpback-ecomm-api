@@ -11,6 +11,8 @@ public static class OptionsExtensions
         services.Configure<PayUOptions>(configuration.GetSection("PayU"));
         services.Configure<Pricing>(configuration.GetSection("Pricing"));
         services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
+        services.Configure<CompanyOptions>(configuration.GetSection("Company"));
+        services.Configure<SmtpOptions>(configuration.GetSection("SMTP"));
         return services;
     }
 }

@@ -19,7 +19,7 @@ public class BusinesscardCalculator : IPriceCalculator
         _pricing = pricing.Value.Businesscard;
     }
 
-    public decimal Calculate(ProductConfig abstractConfig)
+    public decimal CalculateUnitPrice(ProductConfig abstractConfig)
     {
         if (abstractConfig == null)
             throw new Exception("Invalid configurations");

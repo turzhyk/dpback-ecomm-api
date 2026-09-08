@@ -108,9 +108,9 @@ namespace DPBack.Application.Services
             decimal totalPrice = 0;
             foreach (var i in items)
             {
-                var price = priceCalcService.Calculate(i);
-                i.PricePerUnit = price / i.Quantity;
-                totalPrice += price;
+                var unitPrice = priceCalcService.Calculate(i);
+                i.PricePerUnit = unitPrice;
+                totalPrice += unitPrice*i.Quantity;
             }
 
             var paymentStatus = request.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;

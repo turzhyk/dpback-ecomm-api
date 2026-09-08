@@ -5,6 +5,7 @@ using DPBack.API.Middleware;
 using DPBack.Application.Abstractions;
 using DPBack.Infrastructure.Payments;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +61,7 @@ builder.Services.AddSingleton(new JsonSerializerOptions
     PropertyNameCaseInsensitive = true,
     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
 });
-
+QuestPDF.Settings.License = LicenseType.Community;
 var app = builder.Build();
 await app.SeedDBAsync(configuration);
 

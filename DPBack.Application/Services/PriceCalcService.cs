@@ -17,7 +17,7 @@ public class PriceCalcService(PriceCalculatorFactory factory, ProductConfigMappe
             return 1;
         // throw new ArgumentException("invalid product config");
         var calculator = factory.Get(request.Type);
-        var result = calculator.Calculate(config);
+        var result = calculator.CalculateUnitPrice(config);
         return result;
     }
     public decimal Calculate(OrderItem item)
@@ -25,7 +25,7 @@ public class PriceCalcService(PriceCalculatorFactory factory, ProductConfigMappe
         if (item.Options is null)
             return 0;
         var calculator = factory.Get(item.Type);
-        var result = calculator.Calculate(item.Options);
+        var result = calculator.CalculateUnitPrice(item.Options);
         return result;
     }
 }

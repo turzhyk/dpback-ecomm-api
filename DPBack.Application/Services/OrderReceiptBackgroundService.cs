@@ -31,7 +31,8 @@ public class OrderReceiptBackgroundService(IServiceScopeFactory serviceScopeFact
     {
         using var scope = serviceScopeFactory.CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IOrdersRepository>();
-        
+        var receiptRepo = scope.ServiceProvider.GetRequiredService<IReceiptService>();
+        var resultPdf = receiptRepo.GetReceiptFileAsync(id, cToken);
         
         await repo.ChangeOrderReceiptStatusAsync(id, OrderReceiptStatus.Done, cToken);
     }
