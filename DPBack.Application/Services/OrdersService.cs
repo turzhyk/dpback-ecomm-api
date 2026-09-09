@@ -17,8 +17,9 @@ namespace DPBack.Application.Services
         ILogger<OrdersService> logger,
         ProductConfigMapperFactory optionsMapper)
         : IOrdersService
-
-    {
+   
+    { 
+       
         private static readonly Dictionary<OrderStatus, OrderStatus[]> AllowedTransitions = new()
         {
             { OrderStatus.New, [OrderStatus.InProgress, OrderStatus.Cancelled] },
@@ -152,6 +153,7 @@ namespace DPBack.Application.Services
         public async Task ChangeStatusAsync(Guid orderId, string author, OrderStatus newStatus,
             CancellationToken cToken)
         {
+           
             var order = await ordersRepo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
