@@ -84,6 +84,7 @@ namespace DPBack.Application.Services
         public async Task<CreateOrderResponse> CreateAsync(Guid? userId, CreateOrderRequest request,
             CancellationToken cToken)
         {
+            cToken.ThrowIfCancellationRequested();
             logger.LogInformation("Creating new order for user {userId}", userId);
             var authorId = userId ?? Guid.NewGuid();
             var customerId = request.CustomerId ?? Guid.NewGuid();
@@ -95,9 +96,7 @@ namespace DPBack.Application.Services
                 if (!customerExists)
                     throw new CustomerDoesNotExistException($"customer {_customerId} does not exist");
             }
-
-           
-
+            
             var items = request.Items.Select(i => new OrderItem
             {
                 Id = Guid.NewGuid(),
@@ -124,7 +123,7 @@ namespace DPBack.Application.Services
                 Id = Guid.NewGuid()
             };
             var history = new List<OrderHistoryElement> { initHistoryElement };
-            var (order, error) = Order.Create(
+            var order = new Order(
                 orderId,
                 0,
                 request.Desc,
