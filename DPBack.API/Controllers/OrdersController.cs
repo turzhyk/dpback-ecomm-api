@@ -27,9 +27,9 @@ namespace DPBack.API.Controllers
             
             return Ok(result);
         }
-        [HttpPost(("paged"))]
+        [HttpGet(("paged"))]
         [Authorize]
-        public async Task<ActionResult<List<OrderResponse>>> GetOrdersFiltered(OrdersFilteredRequestDto request,CancellationToken cToken)
+        public async Task<ActionResult<List<OrderResponse>>> GetOrdersFiltered([FromQuery]OrdersFilteredRequestDto request,CancellationToken cToken)
         {
             var respose = await service.GetFilteredAsync(request, cToken);
             return Ok(respose);

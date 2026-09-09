@@ -75,11 +75,13 @@ namespace DPBack.Infrastructure.Repositories
             return count;
         }
 
-        public async Task<List<Order>> GetAll(CancellationToken cToken, int skip = 0, int take = 20)
+        public async Task<List<Order>> GetAll(CancellationToken cToken, int skip = 0, int take = 20,
+            List<OrderStatus>? correctStatuses = null)
         {
             var orderEntities =
                 await context.Orders
                     .AsNoTracking()
+                    .Where(x => correctStatuses == null || correctStatuses.Contains(x.Status))
                     .Skip(skip)
                     .Take(take)
                     .Include(o => o.Items)
@@ -92,41 +94,50 @@ namespace DPBack.Infrastructure.Repositories
 
         public async Task<Guid> Create(Order order, CancellationToken cToken)
         {
-           
-            var items = order.Items.Select(i => new OrderItemEntity
+            await using var transaction = await context.Database.BeginTransactionAsync(cToken);
+            try
             {
-                Id = i.Id,
-                Quantity = i.Quantity,
-                Type = i.Type,
-                PricePerUnit = i.PricePerUnit,
-                Options = i.Options is null
-                    ? null
-                    : JsonSerializer.Serialize(i.Options, i.Options.GetType()),
-            }).ToList();
-            var historyEntities = order.History.Select(x => new OrderHistoryElementEntity
+                var items = order.Items.Select(i => new OrderItemEntity
+                {
+                    Id = i.Id,
+                    Quantity = i.Quantity,
+                    Type = i.Type,
+                    PricePerUnit = i.PricePerUnit,
+                    Options = i.Options is null
+                        ? null
+                        : JsonSerializer.Serialize(i.Options, i.Options.GetType()),
+                }).ToList();
+                var historyEntities = order.History.Select(x => new OrderHistoryElementEntity
+                {
+                    Id = x.Id,
+                    AuthorLogin = x.AuthorLogin,
+                    OrderId = x.OrderId,
+                    Status = x.Status,
+                    ChangedAt = x.ChangedAt
+                }).ToList();
+                var orderEntity = new OrderEntity
+                {
+                    Id = order.Id,
+                    Descriprion = order.Description,
+                    TotalPrice = order.TotalPrice,
+                    AssignedTo = order.AssignedTo.ToString(),
+                    Items = items,
+                    History = historyEntities,
+                    CreatedAt = order.CreatedAt,
+                    PaymentStatus = order.PaymentStatus,
+                    AddressSnapshot = "",
+                    Status = order.Status
+                };
+                await context.Orders.AddAsync(orderEntity, cToken);
+                await context.SaveChangesAsync(cToken);
+                await transaction.CommitAsync(cToken);
+                return order.Id;
+            }
+            catch
             {
-                Id = x.Id,
-                AuthorLogin = x.AuthorLogin,
-                OrderId = x.OrderId,
-                Status = x.Status,
-                ChangedAt = x.ChangedAt
-            }).ToList();
-            var orderEntity = new OrderEntity
-            {
-                Id = order.Id,
-                Descriprion = order.Description,
-                TotalPrice = order.TotalPrice,
-                AssignedTo = order.AssignedTo.ToString(),
-                Items = items,
-                History = historyEntities,
-                CreatedAt = order.CreatedAt,
-                PaymentStatus = order.PaymentStatus,
-                AddressSnapshot = "",
-                Status = order.Status
-            };
-            await context.Orders.AddAsync(orderEntity, cToken);
-            await context.SaveChangesAsync(cToken);
-            return order.Id;
+                await transaction.RollbackAsync(cToken);
+                throw;
+            }
         }
 
         public async Task SetPaymentStatus(Guid orderId, OrderPaymentStatus status, CancellationToken cToken)
@@ -153,23 +164,33 @@ namespace DPBack.Infrastructure.Repositories
         public async Task ChangeStatus(Guid orderId, string author, OrderStatus status, string newAuthor,
             CancellationToken cToken)
         {
-            var order = await context.Orders
-                .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
-            if (order == null)
-                throw new Exception($"No order found with id {orderId}");
-            order.Status = status;
-
-            order.AssignedTo = newAuthor;
-
-            context.OrderStatusHistories.Add(new OrderHistoryElementEntity
+            await using var transaction = await context.Database.BeginTransactionAsync(cToken);
+            try
             {
-                Id = Guid.NewGuid(),
-                OrderId = orderId,
-                AuthorLogin = author,
-                Status = status,
-                ChangedAt = DateTime.UtcNow
-            });
-            await context.SaveChangesAsync(cToken);
+                var order = await context.Orders
+                    .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
+                if (order == null)
+                    throw new Exception($"No order found with id {orderId}");
+                order.Status = status;
+
+                order.AssignedTo = newAuthor;
+
+                context.OrderStatusHistories.Add(new OrderHistoryElementEntity
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = orderId,
+                    AuthorLogin = author,
+                    Status = status,
+                    ChangedAt = DateTime.UtcNow
+                });
+                await context.SaveChangesAsync(cToken);
+                await transaction.CommitAsync(cToken);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cToken);
+                throw;
+            }
         }
 
         public async Task AssignOrderWithStatus(
@@ -177,24 +198,34 @@ namespace DPBack.Infrastructure.Repositories
             string author,
             OrderHistoryElement historyElement, CancellationToken cToken)
         {
-            var order = await context.Orders
-                .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
-
-            if (order == null)
-                throw new Exception($"No order found with id {orderId}");
-
-            order.AssignedTo = author;
-
-            context.OrderStatusHistories.Add(new OrderHistoryElementEntity
+            await using var transaction = await context.Database.BeginTransactionAsync(cToken);
+            try
             {
-                Id = Guid.NewGuid(),
-                OrderId = orderId,
-                Status = historyElement.Status,
-                AuthorLogin = historyElement.AuthorLogin,
-                ChangedAt = historyElement.ChangedAt,
-            });
+                var order = await context.Orders
+                    .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
 
-            await context.SaveChangesAsync(cToken);
+                if (order == null)
+                    throw new Exception($"No order found with id {orderId}");
+
+                order.AssignedTo = author;
+
+                context.OrderStatusHistories.Add(new OrderHistoryElementEntity
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = orderId,
+                    Status = historyElement.Status,
+                    AuthorLogin = historyElement.AuthorLogin,
+                    ChangedAt = historyElement.ChangedAt,
+                });
+
+                await context.SaveChangesAsync(cToken);
+                await transaction.CommitAsync(cToken);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cToken);
+                throw;
+            }
         }
 
 

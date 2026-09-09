@@ -9,5 +9,5 @@ public class OrderItemResponse
     public int Quantity { get; set; }
     public OrderItemType Type { get; set; }
     public decimal PricePerUnit { get; set; }
-    public JsonElement Options { get; set; }
+    public JsonElement? Options { get; set; }
 }

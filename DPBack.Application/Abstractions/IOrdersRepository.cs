@@ -7,7 +7,7 @@ namespace DPBack.Application.Abstractions
     {
         Task<Guid> Create(Order order, CancellationToken cToken);
         Task<Guid> Delete(Guid id, CancellationToken cToken);
-        Task<List<Order>> GetAll(CancellationToken cToken, int skip, int take);
+        Task<List<Order>> GetAll(CancellationToken cToken, int skip, int take, List<OrderStatus>? correctStatuses = null);
         Task<int> Count(CancellationToken cToken);
         Task<Order?> GetById(Guid id, CancellationToken cToken);
         Task Update(Order order, CancellationToken cToken);

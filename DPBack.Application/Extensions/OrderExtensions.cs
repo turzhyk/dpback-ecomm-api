@@ -18,8 +18,8 @@ public static class OrderExtensions
             {
                 Quantity = i.Quantity,
                 Type = i.Type,
-                Options = 
-                     JsonSerializer.SerializeToElement(i.Options, i.Options.GetType()),
+                Options = i.Options != null?
+                     JsonSerializer.SerializeToElement(i.Options, i.Options.GetType()):null,
             }).ToList(),
             History = o.History.Select(h => new OrderHistoryElementResponse
             {
