@@ -66,7 +66,7 @@ namespace DPBack.Application.Services
                 request.PageSize,
                 request.PageNumber);
 
-            var orders = await ordersRepo.GetAll(cToken, skip, request.PageSize);
+            var orders = await ordersRepo.GetAll(cToken, skip, request.PageSize, request.Status);
 
             var totalCount = await ordersRepo.Count(cToken);
             var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
