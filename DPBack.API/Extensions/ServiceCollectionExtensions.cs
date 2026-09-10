@@ -31,6 +31,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IReceiptGenerator, QuestPdfReceiptGenerator>();
         services.AddScoped<IEmailSender, MailKitEmailSender>();
 
+        services.AddMemoryCache();
+
 
         services.AddScoped<IPriceCalculator, BusinesscardCalculator>();
         services.AddScoped<IPriceCalculator, OpeningHoursStickerCalculator>();

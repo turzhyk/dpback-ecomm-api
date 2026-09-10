@@ -83,7 +83,7 @@ namespace DPBack.Infrastructure.Repositories
                     .AsNoTracking()
                     .Where(x => correctStatuses == null || correctStatuses.Contains(x.Status))
                     .Skip(skip)
-                    .Take(take)
+                    .Take(take == 0? 10000:take)
                     .Include(o => o.Items)
                     .Include(o => o.History)
                     .OrderByDescending(x => x.CreatedAt)

@@ -6,6 +6,7 @@ using DPBack.Application.Extensions;
 using DPBack.Application.Mappers;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace DPBack.Application.Services
@@ -15,11 +16,11 @@ namespace DPBack.Application.Services
         IPaymentService paymentService,
         IPriceCalcService priceCalcService,
         ILogger<OrdersService> logger,
-        ProductConfigMapperFactory optionsMapper)
+        ProductConfigMapperFactory optionsMapper,  IMemoryCache cache)
         : IOrdersService
-   
-    { 
-       
+
+    {
+        private const string OrdersCacheKey = "all_orders_cache";
         private static readonly Dictionary<OrderStatus, OrderStatus[]> AllowedTransitions = new()
         {
             { OrderStatus.New, [OrderStatus.InProgress, OrderStatus.Cancelled] },
@@ -38,15 +39,25 @@ namespace DPBack.Application.Services
         };
 
 
-        public async Task<List<OrderResponse>> GetAllAsync(CancellationToken cToken)
+        public  ValueTask<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken cToken)
         {
             logger.LogInformation("Getting all orders");
-            var orders = await ordersRepo.GetAll(cToken, 0, 100);
+            if (cache.TryGetValue(OrdersCacheKey, out IReadOnlyList<OrderResponse>? cachedOrders) &&
+                cachedOrders != null)
+            {
+                return new ValueTask<IReadOnlyList<OrderResponse>>(cachedOrders);
+            }
+            else return new ValueTask<IReadOnlyList<OrderResponse>>(FetchAndCatchAllOrdersAsync(cToken));
+
+        }
+        private async Task<IReadOnlyList<OrderResponse>> FetchAndCatchAllOrdersAsync(CancellationToken cToken)
+        {
+            var orders = await ordersRepo.GetAll(cToken, 0, 0);
             var response = orders.Select(o =>
                 o.ToDto()).ToList();
+            cache.Set(OrdersCacheKey, response.AsReadOnly(), TimeSpan.FromMinutes(10));
             return response;
         }
-
         public async Task<PagedResponse<OrderResponse>> GetFilteredAsync(OrdersFilteredRequestDto request,
             CancellationToken cToken)
         {
@@ -139,6 +150,7 @@ namespace DPBack.Application.Services
                 history
             );
             await ordersRepo.Create(order, cToken);
+            cache.Remove(OrdersCacheKey);
             if (paymentStatus == OrderPaymentStatus.Paid)
             {
                 return new CreateOrderResponse(order.Id);
