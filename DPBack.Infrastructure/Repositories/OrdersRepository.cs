@@ -82,6 +82,7 @@ namespace DPBack.Infrastructure.Repositories
                 await context.Orders
                     .AsNoTracking()
                     .Where(x => correctStatuses == null || correctStatuses.Contains(x.Status))
+                    .OrderBy(x => x.Id)
                     .Skip(skip)
                     .Take(take == 0? 10000:take)
                     .Include(o => o.Items)
