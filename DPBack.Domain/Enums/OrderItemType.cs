@@ -8,4 +8,5 @@ public enum OrderItemType
     PhotoA4 = 3, 
     Tshirt = 4,
     Mug = 5,
+    Test = 10
 }

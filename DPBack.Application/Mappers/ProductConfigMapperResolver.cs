@@ -9,11 +9,11 @@ using DPBack.Domain.Models.Products;
 
 namespace DPBack.Application.Mappers;
 
-public class ProductConfigMapperFactory
+public class ProductConfigMapperResolver:IProductConfigMapperResolver
 {
     private readonly Dictionary<OrderItemType, IProductConfigMapper> _mappers;
 
-    public ProductConfigMapperFactory(IEnumerable<IProductConfigMapper> mappers)
+    public ProductConfigMapperResolver(IEnumerable<IProductConfigMapper> mappers)
     {
         _mappers = mappers.ToDictionary(x => x.Type);
     }

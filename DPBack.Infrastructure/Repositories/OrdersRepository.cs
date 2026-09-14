@@ -11,11 +11,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DPBack.Infrastructure.Repositories
 {
-    public class OrdersRepository(OrderStoreDbContext context, ProductConfigMapperFactory mapper)
+    public class OrdersRepository(OrderStoreDbContext context, ProductConfigMapperResolver mapper)
         : IOrdersRepository
 
     {
-        private static Order MapToOrder(OrderEntity e, ProductConfigMapperFactory mapper)
+        private static Order MapToOrder(OrderEntity e, ProductConfigMapperResolver mapper)
         {
             var items = e.Items.Select(i => new OrderItem
             {

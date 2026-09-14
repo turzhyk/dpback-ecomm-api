@@ -16,7 +16,7 @@ namespace DPBack.Application.Services
         IPaymentService paymentService,
         IPriceCalcService priceCalcService,
         ILogger<OrdersService> logger,
-        ProductConfigMapperFactory optionsMapper,  IMemoryCache cache)
+        IProductConfigMapperResolver optionsMapper,  IMemoryCache cache)
         : IOrdersService
 
     {

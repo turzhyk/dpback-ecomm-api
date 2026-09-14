@@ -48,7 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IProductConfigMapper, TshirtConfigMapper>();
 
         services.AddScoped<PriceCalculatorFactory>();
-        services.AddScoped<ProductConfigMapperFactory>();
+        services.AddScoped<ProductConfigMapperResolver>();
 
         services.AddSingleton<IPaymentTokenProvider, PayUTokenProvider>();
         

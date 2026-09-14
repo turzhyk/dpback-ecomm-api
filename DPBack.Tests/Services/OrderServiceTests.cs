@@ -4,6 +4,7 @@ using DPBack.Application.Contracts;
 using DPBack.Application.Mappers;
 using DPBack.Application.Services;
 using DPBack.Domain.Enums;
+using DPBack.Domain.Enums.Products;
 using DPBack.Domain.Models.Products;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -19,7 +20,7 @@ public class OrderServiceTests
     private readonly Mock<IPaymentService> _mockPaymentService;
     private readonly Mock<IPriceCalcService> _mockCalculator;
     private readonly IOrdersService _service;
-    private readonly Mock<ProductConfigMapperFactory> _mockMapper;
+    private readonly Mock<IProductConfigMapperResolver> _mockMapper;
     private readonly Mock<IMemoryCache> _mockCache;
 
     public OrderServiceTests()
@@ -28,7 +29,7 @@ public class OrderServiceTests
         _mockLogger = new Mock<ILogger<OrdersService>>();
         _mockCalculator = new Mock<IPriceCalcService>();
         _mockPaymentService = new Mock<IPaymentService>();
-        _mockMapper = new Mock<ProductConfigMapperFactory>();
+        _mockMapper = new Mock<IProductConfigMapperResolver>();
         _mockCache = new Mock<IMemoryCache>();
         _service = new OrdersService(_mockRepository.Object, _mockPaymentService.Object, _mockCalculator.Object,
             _mockLogger.Object, _mockMapper.Object, _mockCache.Object);
@@ -39,7 +40,8 @@ public class OrderServiceTests
     {
         var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
         {
-            new OrderItemRequest(1, OrderItemType.Businesscard, new JsonElement(), null)
+            new OrderItemRequest(1, OrderItemType.Test,
+                new JsonElement(), null)
         }, false, Guid.NewGuid());
 
         _mockPaymentService.Setup(x =>
@@ -48,8 +50,8 @@ public class OrderServiceTests
             x.Calculate(It.IsAny<OrderItemRequest>())).Returns(10m);
 
         var result = await _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None);
-        
+
         Assert.NotEmpty(result.PaymentUrl);
-        Assert.NotEqual(Guid.Empty,result.OrderId);
+        Assert.NotEqual(Guid.Empty, result.OrderId);
     }
 }
