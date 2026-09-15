@@ -27,14 +27,15 @@ public class UserService(
         if (await repo.GetByEmailAsync(request.Email, cToken) != null)
             throw new UserAlreadyExistsException(request.Email);
 
-        var user = new User(
-            Guid.NewGuid(),
-            request.Email,
-            "",
-            request.Email,
-            UserRole.User,
-            DateTime.UtcNow
-        );
+        var user = new User { 
+            Id = Guid.NewGuid(),
+            Login = request.Email,
+            PasswordHash ="",
+           Email = request.Email,
+            Role = UserRole.User,
+            CreatedAt = DateTime.UtcNow
+            
+        };
 
         var hash = passwordHasher.HashPassword(user, request.Password);
 

@@ -19,8 +19,15 @@ public class UsersRepository(UserStoreDbContext context) : IUsersRepository
         var userEntity = await context.Users.FirstOrDefaultAsync(u => u.Email == email, cToken);
         if (userEntity == null)
             return null;
-        return new User(userEntity.Id, userEntity.Login, userEntity.PasswordHash, userEntity.Email, userEntity.Role,
-            userEntity.CreatedAt);
+        return new User
+        {
+            Id = userEntity.Id,
+            Login = userEntity.Login,
+            PasswordHash = userEntity.PasswordHash,
+            Email = userEntity.Email,
+            Role = userEntity.Role,
+            CreatedAt = userEntity.CreatedAt
+        };
     }
 
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cToken)
@@ -28,8 +35,15 @@ public class UsersRepository(UserStoreDbContext context) : IUsersRepository
         var userEntity = await context.Users.FirstOrDefaultAsync(u => u.Id == id, cToken);
         if (userEntity == null)
             return null;
-        return new User(userEntity.Id, userEntity.Login, userEntity.PasswordHash, userEntity.Email, userEntity.Role,
-            userEntity.CreatedAt);
+        return new User
+        {
+            Id = userEntity.Id,
+            Login = userEntity.Login,
+            PasswordHash = userEntity.PasswordHash,
+            Email = userEntity.Email,
+            Role = userEntity.Role,
+            CreatedAt = userEntity.CreatedAt
+        };
     }
 
     public async Task<Guid> CreateAsync(User user, CancellationToken cToken)

@@ -217,7 +217,7 @@ namespace DPBack.Application.Services
                 orderId,
                 author,
                 new OrderHistoryElement
-                {
+                {   OrderId = orderId,
                     Status = OrderStatus.InProgress,
                     AuthorLogin = author,
                     ChangedAt = DateTime.UtcNow

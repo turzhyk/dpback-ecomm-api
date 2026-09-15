@@ -6,7 +6,7 @@ namespace DPBack.Application.Options.Pricing;
 
 public class BusinesscardPricing
 {
-    public decimal BasePrice { get; set; }
-    public Dictionary<string, decimal> ThicknessPrices  {get;set;} = new();
-    public Dictionary<string, decimal> CoatingPrices { get; set; } = new();
+    public required decimal BasePrice { get; set; }
+    public required Dictionary<string, decimal> ThicknessPrices  {get;set;} = new();
+    public required Dictionary<string, decimal> CoatingPrices { get; set; } = new();
 }

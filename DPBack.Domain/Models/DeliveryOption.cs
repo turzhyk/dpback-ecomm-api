@@ -3,6 +3,6 @@
 public class DeliveryOption
 {
     public Guid Id { get; set; }
-    public string Title { get; set; }
-    public decimal Price { get; set; }
+    public required string Title { get; set; }
+    public required decimal Price { get; set; }
 }

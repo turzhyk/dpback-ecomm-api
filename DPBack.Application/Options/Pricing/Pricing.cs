@@ -2,6 +2,6 @@
 
 public class Pricing
 {
-    public BusinesscardPricing Businesscard { get; set; } = new();
-    public OpeningHoursStickerPricing OpeningHoursSticker { get; set; } = new();
+    public required BusinesscardPricing Businesscard { get; set; } 
+    public required OpeningHoursStickerPricing OpeningHoursSticker { get; set; } 
 }

@@ -240,7 +240,7 @@ namespace DPBack.Infrastructure.Repositories
                 throw new Exception("Order not found");
             orderEntity.History.Add(new OrderHistoryElementEntity
             {
-                Order = orderEntity,
+                OrderId = order.Id,
                 Status = order.History.Last().Status,
                 AuthorLogin = order.History.Last().AuthorLogin,
                 ChangedAt = order.History.Last().ChangedAt,

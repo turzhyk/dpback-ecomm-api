@@ -10,7 +10,7 @@ public static class OrderExtensions
     {
         return new OrderResponse
         {
-            id = o.Id,
+            Id = o.Id,
             OrderNumber = o.OrderNumber,
             Desc = o.Description,
             Price = o.TotalPrice,

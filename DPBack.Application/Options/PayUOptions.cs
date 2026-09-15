@@ -4,8 +4,8 @@ namespace DPBack.Application.Options;
 
 public class PayUOptions
 {
-    public string Secret { get; set; }
-    public string SecondKey { get; set; }
-    public string ClientId { get; set; }
-    public string NotifyUrl { get; set; }
+    public required string Secret { get; set; }
+    public required string SecondKey { get; set; }
+    public required string ClientId { get; set; }
+    public required string NotifyUrl { get; set; }
 }

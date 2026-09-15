@@ -2,6 +2,6 @@
 
 public class SmtpOptions
 {
-    public string SenderEmail { get; set; }
-    public string SenderName { get; set; }
+    public required string SenderEmail { get; set; }
+    public required string SenderName { get; set; }
 }

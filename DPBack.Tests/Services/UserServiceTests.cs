@@ -1,6 +1,7 @@
 ﻿using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts;
 using DPBack.Application.Services;
+using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ public class UserServiceTests
     public async Task GetById_ShouldReturnUser()
     {
         var id = Guid.NewGuid();
-        var user = new User { Id = id };
+        var user = new User { Id = id, Email = "test@test.com" , Login = "test" , Role = UserRole.User , CreatedAt = DateTime.Now, PasswordHash = ""};
 
         _mockRepository.Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(user);
 
@@ -52,7 +53,7 @@ public class UserServiceTests
     public async Task GetByEmail_ShouldReturnUser()
     {
         var email = "test@mail.com";
-        var user = new User { Email = email };
+        var user = new User { Id = Guid.NewGuid(), Email = email , Login = "test" , Role = UserRole.User , CreatedAt = DateTime.Now, PasswordHash = ""};
 
         _mockRepository.Setup(r => r.GetByEmailAsync(email, It.IsAny<CancellationToken>())).ReturnsAsync(user);
 
@@ -79,11 +80,9 @@ public class UserServiceTests
     {
         var email = "user@mail.com";
         var password = "1111";
-        var user = new User { Email = email };
         var passwordHash = "";
 
         _mockHasher.Setup(x => x.HashPassword(It.IsAny<User>(), password)).Returns(passwordHash);
-        var newUser = new User { Email = email, PasswordHash = passwordHash };
         var guid = Guid.NewGuid();
         _mockRepository.Setup(x => x.CreateAsync(
                 It.Is<User>(u =>

@@ -78,8 +78,7 @@ namespace DPBack.API.Controllers
             // var userId = GetCurrentUserId();
             // var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var status = await service.GetPaymentStatusAsync(id, cToken);
-            var response = new GetOrderPaymentStatusResponse
-                { PaymentStatus = status };
+            var response = new GetOrderPaymentStatusResponse(status);
             return Ok(response);
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace DPBack.Application.Contracts;
 
-public class OrderHistoryElementResponse
+public record OrderHistoryElementResponse
 {
     public string Status { get; set; }
     public string AuthorId { get; set; }

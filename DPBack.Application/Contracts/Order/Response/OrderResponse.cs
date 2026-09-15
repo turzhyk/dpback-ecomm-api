@@ -3,9 +3,9 @@ using DPBack.Domain.Models;
 
 namespace DPBack.Application.Contracts
 {
-    public class OrderResponse
+    public record OrderResponse
     {
-        public Guid id { get; set; }
+        public Guid Id { get; set; }
         public int OrderNumber { get; set; }
         public string Desc { get; set; }
         public decimal Price { get; set; }

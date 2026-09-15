@@ -2,5 +2,5 @@
 
 public class PhotoPricing
 {
-    public decimal BasePrice { get; set; }
+    public required decimal BasePrice { get; set; }
 }

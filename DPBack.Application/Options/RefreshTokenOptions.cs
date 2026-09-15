@@ -2,5 +2,5 @@
 
 public class RefreshTokenOptions
 {
-    public int BackgroundServiceRunIntervalInHours { get; set; }
+    public  required int BackgroundServiceRunIntervalInHours { get; set; }
 }

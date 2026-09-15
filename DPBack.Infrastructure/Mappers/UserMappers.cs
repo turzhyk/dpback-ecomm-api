@@ -7,7 +7,7 @@ public static class UserMappers
 {
     public static User ToModel(this UserEntity e)
     {
-        return new User(e.Id, e.Login, e.PasswordHash, e.Email, e.Role, e.CreatedAt);
+        return new User{ Id = e.Id, Login = e.Login, PasswordHash = e.PasswordHash,Email = e.Email, Role = e.Role,CreatedAt = e.CreatedAt};
     }
 
     public static UserAddress ToModel(this UserAdressEntity e)

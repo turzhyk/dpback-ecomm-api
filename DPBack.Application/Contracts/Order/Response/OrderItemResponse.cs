@@ -4,7 +4,7 @@ using DPBack.Domain.Enums;
 namespace DPBack.Application.Contracts;
 
 
-public class OrderItemResponse
+public record OrderItemResponse
 {
     public int Quantity { get; set; }
     public OrderItemType Type { get; set; }

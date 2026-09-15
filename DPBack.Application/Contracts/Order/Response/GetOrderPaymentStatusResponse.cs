@@ -3,7 +3,6 @@ using DPBack.Domain.Models;
 
 namespace DPBack.Application.Contracts;
 
-public class GetOrderPaymentStatusResponse
-{
-    public OrderPaymentStatus PaymentStatus { get; set; }
-}
+public record GetOrderPaymentStatusResponse(
+    OrderPaymentStatus PaymentStatus
+);
