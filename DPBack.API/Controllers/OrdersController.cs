@@ -31,12 +31,12 @@ namespace DPBack.API.Controllers
         [Authorize]
         public async Task<ActionResult<List<OrderResponse>>> GetOrdersFiltered([FromQuery]OrdersFilteredRequestDto request,CancellationToken cToken)
         {
-            var respose = await service.GetFilteredAsync(request, cToken);
-            return Ok(respose);
+            var response = await service.GetFilteredAsync(request, cToken);
+            return Ok(response);
         }
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<ActionResult<OrderResponse>> GetOrderByIdAsync(Guid id, CancellationToken cToken)
+        public async Task<ActionResult<OrderResponse>> GetOrderById(Guid id, CancellationToken cToken)
         {
             var userId = GetCurrentUserId();
             if (userId is not Guid user)
@@ -45,21 +45,22 @@ namespace DPBack.API.Controllers
             var result = await service.GetByIdAsync(user, id, cToken);
             return Ok(result);
         }
-        [HttpPut("{id}/assigned")]
+        [HttpPatch("{id}/assigned")]
         [Authorize(Roles = "Admin, Worker")]
-        public async Task<ActionResult> AssignOrderTo(Guid id, [FromBody] AssignOrderRequest request, CancellationToken cToken)
+        public async Task<ActionResult> AssignOrderToWorker(Guid id, [FromBody] AssignOrderRequest request, CancellationToken cToken)
         {
             await service.AssignToUserAsync(id, request.AuthorLogin, cToken);
             return Ok();
         }
 
-        [HttpPut("{id}/status")]
+        [HttpPatch("{id}/status")]
         [Authorize(Roles = "Admin, Worker")]
         public async Task<ActionResult> ChangeOrderStatus(Guid id, [FromBody] ChangeOrderStatusRequest request, CancellationToken cToken)
         {
             var userId = GetCurrentUserId();
-
-            await service.ChangeStatusAsync(id, userId.ToString(), request.Status, cToken);
+            if (userId is null)
+                throw new UnauthorizedAccessException();
+            await service.ChangeStatusAsync(id, userId.ToString()!, request.Status, cToken);
             return Ok();
         }
       

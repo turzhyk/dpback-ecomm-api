@@ -24,6 +24,7 @@ public static class OrderExtensions
             History = o.History.Select(h => new OrderHistoryElementResponse
             {
                 Status = h.Status.ToString(),
+                Message= h.Message,
                 ChangedAt = h.ChangedAt,
                 AuthorId = h.AuthorLogin
             }).ToList(),

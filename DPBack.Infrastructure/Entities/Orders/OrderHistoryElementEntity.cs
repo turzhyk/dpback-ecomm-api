@@ -4,12 +4,12 @@ using DPBack.Infrastructure.Entities;
 
 namespace DPBack.Infrastructure.Entities;
 
-
 public class OrderHistoryElementEntity
 {
     public Guid Id { get; set; }
     public required Guid OrderId { get; set; }
-    public  OrderStatus? Status { get; set; }
+    public OrderStatus? Status { get; set; }
+    public string? Message { get; set; }
     public required DateTime ChangedAt { get; set; }
     public string? AuthorLogin { get; set; }
     public OrderEntity Order { get; set; } = null!;

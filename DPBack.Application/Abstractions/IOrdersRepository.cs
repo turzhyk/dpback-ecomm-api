@@ -12,7 +12,7 @@ namespace DPBack.Application.Abstractions
         Task<Order?> GetById(Guid id, CancellationToken cToken);
         Task Update(Order order, CancellationToken cToken);
         Task<Guid> Update(Guid id, string description, decimal price, string assignedTo, CancellationToken cToken);
-        Task ChangeStatus(Guid orderId, string author, OrderStatus status, string newAuthor, CancellationToken cToken);
+        Task ChangeStatus(Guid orderId, string author, OrderStatus status, OrderHistoryElement historyElement, CancellationToken cToken);
         Task SetPaymentStatus(Guid orderId, OrderPaymentStatus status, CancellationToken cToken);
         Task<OrderPaymentStatus?> GetPaymentStatus(Guid orderId, CancellationToken cToken);
 

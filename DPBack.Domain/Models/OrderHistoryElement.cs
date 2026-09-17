@@ -6,6 +6,7 @@ public class OrderHistoryElement
 {
     public Guid Id { get; set; }
     public required Guid OrderId { get; set; }
+    public string? Message { get; set; }
     public OrderStatus? Status { get; set; }
     public required DateTime ChangedAt { get; set; }
     public string? AuthorLogin { get; set; }

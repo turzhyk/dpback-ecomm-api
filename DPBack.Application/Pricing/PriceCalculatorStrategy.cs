@@ -3,11 +3,11 @@ using DPBack.Domain.Enums;
 
 namespace DPBack.Application.Pricing;
 
-public class PriceCalculatorFactory
+public class PriceCalculatorStrategy
 {
     private readonly Dictionary<OrderItemType, IPriceCalculator> _calculators;
 
-    public PriceCalculatorFactory(IEnumerable<IPriceCalculator> calculators)
+    public PriceCalculatorStrategy(IEnumerable<IPriceCalculator> calculators)
     {
         _calculators = calculators.ToDictionary(i => i.Type);
     }

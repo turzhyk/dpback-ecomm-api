@@ -11,11 +11,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DPBack.Infrastructure.Repositories
 {
-    public class OrdersRepository(OrderStoreDbContext context, ProductConfigMapperResolver mapper)
+    public class OrdersRepository(OrderStoreDbContext context, IProductConfigMapperResolver mapper)
         : IOrdersRepository
 
     {
-        private static Order MapToOrder(OrderEntity e, ProductConfigMapperResolver mapper)
+        private static Order MapToOrder(OrderEntity e, IProductConfigMapperResolver mapper)
         {
             var items = e.Items.Select(i => new OrderItem
             {
@@ -108,14 +108,9 @@ namespace DPBack.Infrastructure.Repositories
                         ? null
                         : JsonSerializer.Serialize(i.Options, i.Options.GetType()),
                 }).ToList();
-                var historyEntities = order.History.Select(x => new OrderHistoryElementEntity
-                {
-                    Id = x.Id,
-                    AuthorLogin = x.AuthorLogin,
-                    OrderId = x.OrderId,
-                    Status = x.Status,
-                    ChangedAt = x.ChangedAt
-                }).ToList();
+                var historyEntities = order.History
+                    .Select(x => x.ToEntity())
+                    .ToList();
                 var orderEntity = new OrderEntity
                 {
                     Id = order.Id,
@@ -162,7 +157,7 @@ namespace DPBack.Infrastructure.Repositories
         }
 
 
-        public async Task ChangeStatus(Guid orderId, string author, OrderStatus status, string newAuthor,
+        public async Task ChangeStatus(Guid orderId, string author, OrderStatus status, OrderHistoryElement historyElement,
             CancellationToken cToken)
         {
             await using var transaction = await context.Database.BeginTransactionAsync(cToken);
@@ -172,18 +167,10 @@ namespace DPBack.Infrastructure.Repositories
                     .FirstOrDefaultAsync(o => o.Id == orderId, cToken);
                 if (order == null)
                     throw new Exception($"No order found with id {orderId}");
+                var historyEntity = historyElement.ToEntity();
                 order.Status = status;
-
-                order.AssignedTo = newAuthor;
-
-                context.OrderStatusHistories.Add(new OrderHistoryElementEntity
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = orderId,
-                    AuthorLogin = author,
-                    Status = status,
-                    ChangedAt = DateTime.UtcNow
-                });
+                
+                context.OrderStatusHistories.Add(historyEntity);
                 await context.SaveChangesAsync(cToken);
                 await transaction.CommitAsync(cToken);
             }

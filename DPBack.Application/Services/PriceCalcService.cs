@@ -7,7 +7,7 @@ using DPBack.Domain.Models;
 
 namespace DPBack.Application.Services;
 
-public class PriceCalcService(PriceCalculatorFactory factory, ProductConfigMapperResolver mapperResolver)
+public class PriceCalcService(PriceCalculatorStrategy strategy, IProductConfigMapperResolver mapperResolver)
     : IPriceCalcService
 {
     public decimal Calculate(OrderItemRequest request)
@@ -16,7 +16,7 @@ public class PriceCalcService(PriceCalculatorFactory factory, ProductConfigMappe
         if (config is null)
             return 1;
         // throw new ArgumentException("invalid product config");
-        var calculator = factory.Get(request.Type);
+        var calculator = strategy.Get(request.Type);
         var result = calculator.CalculateUnitPrice(config);
         return result;
     }
@@ -24,7 +24,7 @@ public class PriceCalcService(PriceCalculatorFactory factory, ProductConfigMappe
     {
         if (item.Options is null)
             return 0;
-        var calculator = factory.Get(item.Type);
+        var calculator = strategy.Get(item.Type);
         var result = calculator.CalculateUnitPrice(item.Options);
         return result;
     }

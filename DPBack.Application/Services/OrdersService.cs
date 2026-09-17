@@ -179,7 +179,16 @@ namespace DPBack.Application.Services
             if (AllowedTransitions[order.Status].Contains(newStatus))
             {
                 var newAuthor = newStatus == OrderStatus.InProgress ? author : "";
-                await ordersRepo.ChangeStatus(orderId, author, newStatus, newAuthor, cToken);
+                var history = new OrderHistoryElement
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = orderId,
+                    Status = newStatus,
+                    Message = $"The order status changed from {order.Status} to {newStatus}",
+                    AuthorLogin = author,
+                    ChangedAt = DateTime.UtcNow
+                };
+                await ordersRepo.ChangeStatus(orderId, author, newStatus, history, cToken);
             }
             else
                 throw new StatusChangeNotAllowedException();
@@ -217,8 +226,10 @@ namespace DPBack.Application.Services
                 orderId,
                 author,
                 new OrderHistoryElement
-                {   OrderId = orderId,
-                    Status = OrderStatus.InProgress,
+                {   Id = Guid.NewGuid(),
+                    OrderId = orderId,
+                    Status = order.Status,
+                    Message = $"The order is now processed by {author}",
                     AuthorLogin = author,
                     ChangedAt = DateTime.UtcNow
                 }, cToken);
