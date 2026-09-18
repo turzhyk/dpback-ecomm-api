@@ -54,58 +54,7 @@ public class UsersRepository(UserStoreDbContext context) : IUsersRepository
         return user.Id;
     }
 
-    public async Task<List<UserAddress>> GetAddressesByUserIdAsync(Guid id, CancellationToken cToken)
-    {
-        var entities = await context.Adresses
-            .Where(address => address.UserId == id)
-            .ToListAsync(cToken);
-        if (entities.Count == 0)
-            return new List<UserAddress>();
-
-        return entities.Select(entity => entity.ToModel()).ToList();
-    }
-
-    public async Task AddUserAddressAsync(UserAddress address, CancellationToken cToken)
-    {
-        var entity = new UserAdressEntity(address.Id, address.UserId, address.Country, address.City, address.Street,
-            address.BuildingNumber, address.ApartmentNumber, address.PostalCode, address.PhoneNumber, address.Email,
-            address.Options);
-
-        await context.Adresses.AddAsync(entity, cToken);
-        await context.SaveChangesAsync(cToken);
-    }
-
-    public async Task<bool> AddressWithIdExists(Guid id, CancellationToken cToken)
-    {
-        return await context.Adresses.AnyAsync(x => x.Id == id, cToken);
-    }
-
-    public async Task<UserAddress?> GetAddressByIdAsync(Guid id, CancellationToken cToken)
-    {
-        var result = await context.Adresses
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id, cToken);
-        return result?.ToModel();
-    }
-
-    public async Task UpdateUserAddressAsync(Guid addressId, UserAddress address, CancellationToken cToken)
-    {
-        var entity = await context.Adresses
-            .FirstOrDefaultAsync(x => x.Id == addressId, cToken);
-        if (entity is null)
-            throw new KeyNotFoundException("address not found");
-        entity.Country = address.Country;
-        entity.City = address.City;
-        entity.Street = address.Street;
-        entity.BuildingNumber = address.BuildingNumber;
-        entity.ApartmentNumber = address.ApartmentNumber;
-        entity.PostalCode = address.PostalCode;
-        entity.PhoneNumber = address.PhoneNumber;
-        entity.Email = address.Email;
-        entity.Options = address.Options;
-        await context.SaveChangesAsync(cToken);
-    }
-
+ 
 
     public async Task AddRefreshTokenAsync(User user, string token, CancellationToken cToken)
     {

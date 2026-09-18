@@ -10,7 +10,5 @@ public interface IUserService
     Task<UserLoginResponse> RefreshToken(string oldRefreshToken,CancellationToken cToken);
     Task<UserResponse> GetByEmailAsync(string email, CancellationToken cToken);
     Task<UserResponse> GetByIdAsync(Guid id, CancellationToken cToken);
-    Task<List<UserAddressResponseDto>> GetAddressesByUserIdAsync(Guid id, CancellationToken cToken);
-    Task<Guid> AddUserAddressAsync(Guid userId, UserAddressCreateDto dto, CancellationToken cToken);
-    Task ModifyUserAddressAsync(Guid userId, Guid addressId, UserAddressModifyDto dto, CancellationToken cToken);
+   
 }

@@ -1,6 +1,6 @@
 ﻿namespace DPBack.Application.Contracts.User.Response{
 
-    public record UserAddressResponseDto(
+    public record CustomerAddressResponse(
         Guid Id,
         string? Country,
         string? City,

@@ -8,6 +8,5 @@ public record UserResponse(
     string? Login,
     string? Email,
     DateTime CreatedAt,
-    UserRole Role,
-    IReadOnlyList<UserAddressResponseDto>? Addresses
+    UserRole Role
 );

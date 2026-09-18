@@ -1,3 +1,5 @@
+using System;
+using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DPBack.API.Extensions;
@@ -40,6 +42,12 @@ builder.Services.AddSwaggerGen(o =>
         }
     });
 });
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .CreateLogger();
+builder.Host.UseSerilog();
+
 builder.Services.AddDatabase(configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddBackgroundServices();

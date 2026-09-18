@@ -17,6 +17,7 @@ namespace DPBack.Infrastructure.Contexts
 
         public DbSet<DeliveryTypeEntity> DeliveryOptions { get; set; }
         public DbSet<CustomerEntity> Customers { get; set; }
+        public DbSet<CustomerAddressEntity> CustomerAddresses { get; set; }
         public DbSet<OrderReceiptTaskEntity> OrderReceiptTasks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -36,17 +37,17 @@ namespace DPBack.Infrastructure.Contexts
 
             modelBuilder.Entity<CustomerEntity>().HasIndex(x => x.Phone).IsUnique();
             modelBuilder.Entity<OrderItemEntity>(builder =>
-                {
-                    builder .Property(x => x.Options)
-                        .HasColumnType("text");
-                    builder.HasKey(x=>x.Id);
-                    builder.HasOne(x => x.Order)
-                        .WithMany(o => o.Items)
-                        .HasForeignKey(x => x.OrderId)
-                        .IsRequired()
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-               
+            {
+                builder.Property(x => x.Options)
+                    .HasColumnType("text");
+                builder.HasKey(x => x.Id);
+                builder.HasOne(x => x.Order)
+                    .WithMany(o => o.Items)
+                    .HasForeignKey(x => x.OrderId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
 
             modelBuilder.Entity<OrderReceiptTaskEntity>(builder =>
                 {
@@ -65,6 +66,13 @@ namespace DPBack.Infrastructure.Contexts
                     .WithMany(x => x.History)
                     .HasForeignKey(x => x.OrderId)
                     .IsRequired();
+            });
+            modelBuilder.Entity<CustomerAddressEntity>(builder =>
+            {
+                builder.HasKey(x => x.Id);
+                builder.HasOne(x => x.Customer)
+                    .WithMany(x => x.Addresses)
+                    .HasForeignKey(x => x.CustomerId).IsRequired();
             });
         }
     }

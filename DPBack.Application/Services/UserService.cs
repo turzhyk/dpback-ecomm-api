@@ -124,48 +124,5 @@ public class UserService(
         return response;
     }
 
-    public async Task<List<UserAddressResponseDto>> GetAddressesByUserIdAsync(Guid id, CancellationToken cToken)
-    {
-        var exists = await repo.UserWithIdExistsAsync(id, cToken);
-        if (!exists)
-            throw new KeyNotFoundException("user not found");
-
-        var addresses = await repo.GetAddressesByUserIdAsync(id, cToken);
-
-        return addresses.Select(a => a.ToDto()).ToList();
-    }
-
-    public async Task<Guid> AddUserAddressAsync(Guid userId, UserAddressCreateDto dto, CancellationToken cToken)
-    {
-        var userExists = await repo.UserWithIdExistsAsync(userId, cToken);
-        if (!userExists)
-            throw new KeyNotFoundException("user not found");
-        var guid = Guid.NewGuid();
-        var userAddress = new UserAddress(guid, userId, dto.Country, dto.City, dto.Street,
-            dto.BuildingNumber, dto.ApartmentNumber, dto.PostalCode, dto.PhoneNumber, dto.Email,
-            dto.Options);
-        await repo.AddUserAddressAsync(userAddress, cToken);
-        return guid;
-    }
-
-    public async Task ModifyUserAddressAsync(Guid userId, Guid addressId, UserAddressModifyDto dto, CancellationToken cToken)
-    {
-        var userExists = await repo.UserWithIdExistsAsync(userId, cToken);
-        var address = await repo.GetAddressByIdAsync(addressId, cToken);
-        if (!userExists || address is null)
-            throw new KeyNotFoundException("user or/and address not found");
-
-
-        address.Country = dto.Country ?? address.Country;
-        address.City = dto.City ?? address.City;
-        address.Street = dto.Street ?? address.Street;
-        address.BuildingNumber = dto.BuildingNumber ?? address.BuildingNumber;
-        address.ApartmentNumber = dto.ApartmentNumber ?? address.ApartmentNumber;
-        address.PostalCode = dto.PostalCode ?? address.PostalCode;
-        address.PhoneNumber = dto.PhoneNumber ?? address.PhoneNumber;
-        address.Email = dto.Email ?? address.Email;
-        address.Options = dto.Options ?? address.Options;
-
-        await repo.UpdateUserAddressAsync(addressId, address, cToken);
-    }
+  
 }

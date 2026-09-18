@@ -1,8 +1,8 @@
 ﻿namespace DPBack.Domain.Models;
 
-public class UserAddress
+public class CustomerAddress
 {
-    public UserAddress(Guid id, Guid userId, string? country, string? city, string? street, string? buildingNumber, string? apartmentNumber, string? postalCode, string? phoneNumber, string? email, string? options)
+    public CustomerAddress(Guid id, Guid userId, string? country, string? city, string? street, string? buildingNumber, string? apartmentNumber, string? postalCode, string? phoneNumber, string? email, string? options)
     {
         Id = id;
         UserId = userId;
@@ -16,7 +16,7 @@ public class UserAddress
         Email = email;
         Options = options;
     }
-    public UserAddress(){}
+    public CustomerAddress(){}
   
     public Guid Id { get; set; }
     public Guid UserId { get; set; }

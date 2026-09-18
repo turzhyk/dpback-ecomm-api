@@ -12,7 +12,7 @@ namespace DPBack.Domain.Models
         public required string Email { get; set; }
         public required UserRole Role { get; set; }
         public  required DateTime CreatedAt { get; set; }
-        public List<UserAddress>? Adresses { get; set; }
+     
 
         public User()
         {

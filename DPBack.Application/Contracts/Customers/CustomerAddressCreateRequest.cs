@@ -2,7 +2,7 @@
 
 namespace DPBack.Application.Contracts
 {
-    public record UserAddressCreateDto
+    public record CustomerAddressCreateRequest
     {
         public required string Country { get; init; }
         public required string City { get; init; }

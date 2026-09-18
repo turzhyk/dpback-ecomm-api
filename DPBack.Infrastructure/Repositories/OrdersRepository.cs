@@ -84,7 +84,7 @@ namespace DPBack.Infrastructure.Repositories
                     .Where(x => correctStatuses == null || correctStatuses.Contains(x.Status))
                     .OrderBy(x => x.Id)
                     .Skip(skip)
-                    .Take(take == 0? 10000:take)
+                    .Take(take == 0 ? 10000 : take)
                     .Include(o => o.Items)
                     .Include(o => o.History)
                     .OrderByDescending(x => x.CreatedAt)
@@ -157,7 +157,8 @@ namespace DPBack.Infrastructure.Repositories
         }
 
 
-        public async Task ChangeStatus(Guid orderId, string author, OrderStatus status, OrderHistoryElement historyElement,
+        public async Task ChangeStatus(Guid orderId, string author, OrderStatus status,
+            OrderHistoryElement historyElement,
             CancellationToken cToken)
         {
             await using var transaction = await context.Database.BeginTransactionAsync(cToken);
@@ -169,7 +170,7 @@ namespace DPBack.Infrastructure.Repositories
                     throw new Exception($"No order found with id {orderId}");
                 var historyEntity = historyElement.ToEntity();
                 order.Status = status;
-                
+
                 context.OrderStatusHistories.Add(historyEntity);
                 await context.SaveChangesAsync(cToken);
                 await transaction.CommitAsync(cToken);
@@ -332,6 +333,58 @@ namespace DPBack.Infrastructure.Repositories
                 .ToListAsync(cToken);
             var result = entities.Select(x => x.Id).ToList();
             return result;
+        }
+
+        public async Task<List<CustomerAddress>> GetAddressesByCustomerIdAsync(Guid id, CancellationToken cToken)
+        {
+            var entities = await context.CustomerAddresses
+                .Where(address => address.CustomerId == id)
+                .ToListAsync(cToken);
+            if (entities.Count == 0)
+                return new List<CustomerAddress>();
+
+            return entities.Select(entity => entity.ToModel()).ToList();
+        }
+
+        public async Task AddCustomerAddressAsync(CustomerAddress address, CancellationToken cToken)
+        {
+            var entity = new CustomerAddressEntity(address.Id, address.UserId, address.Country, address.City, address.Street,
+                address.BuildingNumber, address.ApartmentNumber, address.PostalCode, address.PhoneNumber, address.Email,
+                address.Options);
+
+            await context.CustomerAddresses.AddAsync(entity, cToken);
+            await context.SaveChangesAsync(cToken);
+        }
+
+        public async Task<bool> CustomerAddressWithIdExists(Guid id, CancellationToken cToken)
+        {
+            return await context.CustomerAddresses.AnyAsync(x => x.Id == id, cToken);
+        }
+
+        public async Task<CustomerAddress?> GetCustomerAddressByIdAsync(Guid id, CancellationToken cToken)
+        {
+            var result = await context.CustomerAddresses
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id, cToken);
+            return result?.ToModel();
+        }
+
+        public async Task UpdateCustomerAddressAsync(Guid addressId, CustomerAddress address, CancellationToken cToken)
+        {
+            var entity = await context.CustomerAddresses
+                .FirstOrDefaultAsync(x => x.Id == addressId, cToken);
+            if (entity is null)
+                throw new KeyNotFoundException("address not found");
+            entity.Country = address.Country;
+            entity.City = address.City;
+            entity.Street = address.Street;
+            entity.BuildingNumber = address.BuildingNumber;
+            entity.ApartmentNumber = address.ApartmentNumber;
+            entity.PostalCode = address.PostalCode;
+            entity.PhoneNumber = address.PhoneNumber;
+            entity.Email = address.Email;
+            entity.Options = address.Options;
+            await context.SaveChangesAsync(cToken);
         }
     }
 }

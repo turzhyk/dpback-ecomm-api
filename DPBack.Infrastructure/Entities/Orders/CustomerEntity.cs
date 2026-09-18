@@ -6,6 +6,7 @@ public class CustomerEntity
     public required string Name { get; set; }
     public required string Phone { get; set; }
     public string? Email { get; set; }
+    public List<CustomerAddressEntity> Addresses { get; private set; }
     public Guid? UserId { get; set; }
     public string? Nip { get; set; }
     public string? Regon { get; set; }

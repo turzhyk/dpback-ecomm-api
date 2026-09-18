@@ -1,9 +1,11 @@
 ﻿using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts;
 using DPBack.Application.Contracts.Customers;
+using DPBack.Application.Contracts.User.Response;
 using DPBack.Application.Exceptions;
 using DPBack.Application.Extensions;
 using DPBack.Application.Mappers;
+using DPBack.Application.Mappers.User;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -16,11 +18,13 @@ namespace DPBack.Application.Services
         IPaymentService paymentService,
         IPriceCalcService priceCalcService,
         ILogger<OrdersService> logger,
-        IProductConfigMapperResolver optionsMapper,  IMemoryCache cache)
+        IProductConfigMapperResolver optionsMapper,
+        IMemoryCache cache)
         : IOrdersService
 
     {
         private const string OrdersCacheKey = "all_orders_cache";
+
         private static readonly Dictionary<OrderStatus, OrderStatus[]> AllowedTransitions = new()
         {
             { OrderStatus.New, [OrderStatus.InProgress, OrderStatus.Cancelled] },
@@ -39,17 +43,16 @@ namespace DPBack.Application.Services
         };
 
 
-        public  ValueTask<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken cToken)
+        public ValueTask<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken cToken)
         {
-            logger.LogInformation("Getting all orders");
             if (cache.TryGetValue(OrdersCacheKey, out IReadOnlyList<OrderResponse>? cachedOrders) &&
                 cachedOrders != null)
             {
                 return new ValueTask<IReadOnlyList<OrderResponse>>(cachedOrders);
             }
             else return new ValueTask<IReadOnlyList<OrderResponse>>(FetchAndCatchAllOrdersAsync(cToken));
-
         }
+
         private async Task<IReadOnlyList<OrderResponse>> FetchAndCatchAllOrdersAsync(CancellationToken cToken)
         {
             var orders = await ordersRepo.GetAll(cToken, 0, 0);
@@ -58,6 +61,7 @@ namespace DPBack.Application.Services
             cache.Set(OrdersCacheKey, response.AsReadOnly(), TimeSpan.FromMinutes(10));
             return response;
         }
+
         public async Task<PagedResponse<OrderResponse>> GetFilteredAsync(OrdersFilteredRequestDto request,
             CancellationToken cToken)
         {
@@ -108,7 +112,7 @@ namespace DPBack.Application.Services
                 if (!customerExists)
                     throw new CustomerDoesNotExistException($"customer {_customerId} does not exist");
             }
-            
+
             var items = request.Items.Select(i => new OrderItem
             {
                 Id = Guid.NewGuid(),
@@ -121,7 +125,7 @@ namespace DPBack.Application.Services
             {
                 var unitPrice = priceCalcService.Calculate(i);
                 i.PricePerUnit = unitPrice;
-                totalPrice += unitPrice*i.Quantity;
+                totalPrice += unitPrice * i.Quantity;
             }
 
             var paymentStatus = request.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
@@ -151,6 +155,7 @@ namespace DPBack.Application.Services
             );
             await ordersRepo.Create(order, cToken);
             cache.Remove(OrdersCacheKey);
+            logger.LogInformation("Order {orderId} created", orderId);
             if (paymentStatus == OrderPaymentStatus.Paid)
             {
                 return new CreateOrderResponse(order.Id);
@@ -165,7 +170,6 @@ namespace DPBack.Application.Services
         public async Task ChangeStatusAsync(Guid orderId, string author, OrderStatus newStatus,
             CancellationToken cToken)
         {
-           
             var order = await ordersRepo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
@@ -196,7 +200,6 @@ namespace DPBack.Application.Services
 
         public async Task<OrderPaymentStatus> GetPaymentStatusAsync(Guid orderId, CancellationToken cToken)
         {
-            logger.LogInformation("Getting order {orderId} payment status", orderId);
             var order = await ordersRepo.GetById(orderId, cToken);
             if (order == null)
                 throw new KeyNotFoundException($"Order with id {orderId} not found");
@@ -226,7 +229,8 @@ namespace DPBack.Application.Services
                 orderId,
                 author,
                 new OrderHistoryElement
-                {   Id = Guid.NewGuid(),
+                {
+                    Id = Guid.NewGuid(),
                     OrderId = orderId,
                     Status = order.Status,
                     Message = $"The order is now processed by {author}",
@@ -245,14 +249,16 @@ namespace DPBack.Application.Services
             };
 
             var result = await ordersRepo.CreateCustomerAsync(customer, cToken);
-            return new CustomerResponseDto(customer.Id, customer.Name, customer.Phone, customer.Email);
+            logger.LogInformation("Created customer {customerId}", result);
+            return new CustomerResponseDto(customer.Id, customer.Name, customer.Phone, customer.Email, null);
         }
 
         public async Task<CustomersResponseDto> GetAllCustomersAsync(CancellationToken cToken)
         {
             var customers = await ordersRepo.GetAllCustomersAsync(cToken);
             var result =
-                new CustomersResponseDto(customers.Select(x => new CustomerResponseDto(x.Id, x.Name, x.Phone, x.Email))
+                new CustomersResponseDto(customers
+                    .Select(x => new CustomerResponseDto(x.Id, x.Name, x.Phone, x.Email, null))
                     .ToList());
             return result;
         }
@@ -260,12 +266,21 @@ namespace DPBack.Application.Services
         public async Task<CustomerResponseDto?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
         {
             var result = await ordersRepo.GetCustomerByPhoneAsync(phone, cToken);
+            var add = result.Addresses;
             if (result is null)
                 return null;
-            return new CustomerResponseDto(result.Id, result.Name, result.Phone, result.Email);
+            return new CustomerResponseDto(result.Id, result.Name, result.Phone, result.Email, null);
         }
 
-        public async Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList() => null;
+        public async Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList()
+        {
+            //TEMP
+            return
+            [
+                new DeliveryOptionResposeDto { Id = Guid.NewGuid(), Price = 10.99m, Title = "Paczkomat Inpost" },
+                new DeliveryOptionResposeDto { Id = Guid.NewGuid(), Price = 15.99m, Title = "Kurier Inpost" }
+            ];
+        }
 
         public async Task SuspendOrderAsync(Guid id, CancellationToken cToken)
         {
@@ -275,6 +290,55 @@ namespace DPBack.Application.Services
             if (order.Status == OrderStatus.Done)
                 throw new StatusChangeNotAllowedException($"Unable to change order {id} status.");
             await ordersRepo.SuspendOrderAsync(id, cToken);
+        }
+
+
+        public async Task<List<CustomerAddressResponse>> GetAddressesByCustomerIdAsync(Guid id,
+            CancellationToken cToken)
+        {
+            var exists = await ordersRepo.CustomerExistsAsync(id, cToken);
+            if (!exists)
+                throw new KeyNotFoundException("user not found");
+
+            var addresses = await ordersRepo.GetAddressesByCustomerIdAsync(id, cToken);
+
+            return addresses.Select(a => a.ToDto()).ToList();
+        }
+
+        public async Task<Guid> AddCustomerAddressAsync(Guid userId, CustomerAddressCreateRequest request,
+            CancellationToken cToken)
+        {
+            var userExists = await ordersRepo.CustomerExistsAsync(userId, cToken);
+            if (!userExists)
+                throw new KeyNotFoundException("user not found");
+            var guid = Guid.NewGuid();
+            var userAddress = new CustomerAddress(guid, userId, request.Country, request.City, request.Street,
+                request.BuildingNumber, request.ApartmentNumber, request.PostalCode, request.PhoneNumber, request.Email,
+                request.Options);
+            await ordersRepo.AddCustomerAddressAsync(userAddress, cToken);
+            return guid;
+        }
+
+        public async Task ModifyCustomerAddressAsync(Guid userId, Guid addressId, CustomerAddressModifyRequest request,
+            CancellationToken cToken)
+        {
+            var userExists = await ordersRepo.CustomerExistsAsync(userId, cToken);
+            var address = await ordersRepo.GetCustomerAddressByIdAsync(addressId, cToken);
+            if (!userExists || address is null)
+                throw new KeyNotFoundException("user or/and address not found");
+
+
+            address.Country = request.Country ?? address.Country;
+            address.City = request.City ?? address.City;
+            address.Street = request.Street ?? address.Street;
+            address.BuildingNumber = request.BuildingNumber ?? address.BuildingNumber;
+            address.ApartmentNumber = request.ApartmentNumber ?? address.ApartmentNumber;
+            address.PostalCode = request.PostalCode ?? address.PostalCode;
+            address.PhoneNumber = request.PhoneNumber ?? address.PhoneNumber;
+            address.Email = request.Email ?? address.Email;
+            address.Options = request.Options ?? address.Options;
+
+            await ordersRepo.UpdateCustomerAddressAsync(addressId, address, cToken);
         }
     }
 }

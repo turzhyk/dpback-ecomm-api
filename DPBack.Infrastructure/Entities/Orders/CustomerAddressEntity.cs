@@ -1,12 +1,12 @@
 ﻿namespace DPBack.Infrastructure.Entities;
 
 
-public class UserAdressEntity
+public class CustomerAddressEntity
 {
-    public UserAdressEntity(Guid id, Guid userId, string? country, string? city, string? street, string? buildingNumber, string? apartmentNumber, string? postalCode, string? phoneNumber, string? email, string? options)
+    public CustomerAddressEntity(Guid id, Guid customerId, string? country, string? city, string? street, string? buildingNumber, string? apartmentNumber, string? postalCode, string? phoneNumber, string? email, string? options)
     {
         Id = id;
-        UserId = userId;
+        CustomerId = customerId;
         Country = country;
         City = city;
         Street = street;
@@ -20,7 +20,8 @@ public class UserAdressEntity
 
     public Guid Id { get; set; }
   
-    public Guid UserId { get; set; }
+    public Guid CustomerId { get; set; }
+    public CustomerEntity Customer { get; set; } 
     public string? Country { get; set; }
     public string? City { get; set; }
     public string? Street { get; set; }

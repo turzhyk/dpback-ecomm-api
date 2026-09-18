@@ -58,36 +58,5 @@ public class UsersController(IUserService service) : ControllerBase
         return Ok();
     }
 
-    [Authorize]
-    [HttpGet("addresses")]
-    public async Task<ActionResult<List<UserAddressResponseDto>>> GetUserAddresses(CancellationToken cToken)
-    {
-        var userId = GetCurrentUserId();
-        var result = await  service.GetAddressesByUserIdAsync(userId, cToken);
-        return Ok(result);
-    }
-    [Authorize]
-    [HttpPost("addresses")]
-    public async Task<ActionResult> AddUserAdress ([FromBody] UserAddressCreateDto request, CancellationToken cToken)
-    {
-        var userId = GetCurrentUserId();
-
-        await service.AddUserAddressAsync(userId, request, cToken);
-        return Ok();
-    }
-    [HttpPatch("addresses/{addressId}")]
-    [Authorize]
-    public async Task<ActionResult> ChangeUserAddress(Guid addressId, [FromBody] UserAddressCreateDto request, CancellationToken cToken)
-    {
-        var userId = GetCurrentUserId();
-        // Implement later
-        return Ok();
-    }
-    [HttpDelete("addresses/{addressId}")]
-    [Authorize]
-    public async Task<ActionResult> DeleteUserAddress(Guid addressId, CancellationToken cToken)
-    {
-        // Implement later
-        return Ok();
-    }
+    
 }

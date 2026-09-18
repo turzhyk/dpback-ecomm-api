@@ -11,24 +11,24 @@ public static class UserMapper
        return new UserResponse
         (
             user.Id, user.Login, user.Email, user.CreatedAt,
-            user.Role, user.Adresses?.Select(a => a.ToDto()).ToList() ?? new List<UserAddressResponseDto>()
+            user.Role
         );
     }
 
-    public static UserAddressResponseDto ToDto(this Domain.Models.UserAddress userAddress)
+    public static CustomerAddressResponse ToDto(this Domain.Models.CustomerAddress customerAddress)
     {
-        return new UserAddressResponseDto
+        return new CustomerAddressResponse
         (
-            userAddress.Id,
-            userAddress.Country,
-            userAddress.City,
-            userAddress.Street,
-            userAddress.BuildingNumber,
-            userAddress.ApartmentNumber,
-            userAddress.PostalCode,
-            userAddress.PhoneNumber,
-            userAddress.Email,
-            userAddress.Options
+            customerAddress.Id,
+            customerAddress.Country,
+            customerAddress.City,
+            customerAddress.Street,
+            customerAddress.BuildingNumber,
+            customerAddress.ApartmentNumber,
+            customerAddress.PostalCode,
+            customerAddress.PhoneNumber,
+            customerAddress.Email,
+            customerAddress.Options
         );
     }
 

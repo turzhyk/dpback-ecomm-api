@@ -10,9 +10,9 @@ public static class UserMappers
         return new User{ Id = e.Id, Login = e.Login, PasswordHash = e.PasswordHash,Email = e.Email, Role = e.Role,CreatedAt = e.CreatedAt};
     }
 
-    public static UserAddress ToModel(this UserAdressEntity e)
+    public static CustomerAddress ToModel(this CustomerAddressEntity e)
     {
-        return new UserAddress(e.Id, e.UserId, e.Country, e.City, e.Street, e.BuildingNumber, e.ApartmentNumber,
+        return new CustomerAddress(e.Id, e.CustomerId, e.Country, e.City, e.Street, e.BuildingNumber, e.ApartmentNumber,
             e.PostalCode, e.PhoneNumber, e.Email, e.Options);
     }
 

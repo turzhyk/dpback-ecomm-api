@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts;
+using DPBack.Application.Exceptions;
 using DPBack.Application.Mappers;
 using DPBack.Application.Services;
 using DPBack.Domain.Enums;
@@ -38,20 +39,39 @@ public class OrderServiceTests
     [Fact]
     public async Task CreateOrder_ShouldReturnResponseDto()
     {
+        var existingCustomerId = new Guid("1e7f7772-9c53-4e88-afa0-d785b3db9842");
+        var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
+        {
+            new OrderItemRequest(1, OrderItemType.Test,
+                new JsonElement(), null)
+        }, false, existingCustomerId);
+
+        _mockPaymentService.Setup(x =>
+            x.CreatePayment(It.IsAny<string>(), It.IsAny<decimal>())).ReturnsAsync("link");
+        _mockCalculator.Setup(x =>
+            x.Calculate(It.IsAny<OrderItemRequest>())).Returns(10m);
+        _mockRepository.Setup(x => x.CustomerExistsAsync(existingCustomerId, CancellationToken.None))
+            .ReturnsAsync(true);
+        var result = await _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None);
+
+        Assert.NotEmpty(result.PaymentUrl);
+        Assert.NotEqual(Guid.Empty, result.OrderId);
+    }
+
+    [Fact]
+    public async Task CreateOrder_ShouldReturn_CustomerDoesntExists()
+    {
         var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
         {
             new OrderItemRequest(1, OrderItemType.Test,
                 new JsonElement(), null)
         }, false, Guid.NewGuid());
 
-        _mockPaymentService.Setup(x =>
-            x.CreatePayment(It.IsAny<string>(), It.IsAny<decimal>())).ReturnsAsync("link");
         _mockCalculator.Setup(x =>
             x.Calculate(It.IsAny<OrderItemRequest>())).Returns(10m);
-
-        var result = await _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None);
-
-        Assert.NotEmpty(result.PaymentUrl);
-        Assert.NotEqual(Guid.Empty, result.OrderId);
+        _mockRepository.Setup(x => x.CustomerExistsAsync(It.IsAny<Guid>(), CancellationToken.None))
+            .ReturnsAsync(false);
+        await Assert.ThrowsAsync<CustomerDoesNotExistException>(() =>
+            _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None));
     }
 }

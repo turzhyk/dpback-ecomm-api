@@ -13,7 +13,7 @@ public class UserEntity
     public string Email { get; private set; }
     public UserRole Role { get; private set; }
     public DateTime CreatedAt { get; private set; }
-    public List<UserAdressEntity> Adresses { get; private set; }
+
 
     private UserEntity() { } 
     public UserEntity(Guid id, string login, string passwordHash, string email, UserRole role, DateTime createdAt)

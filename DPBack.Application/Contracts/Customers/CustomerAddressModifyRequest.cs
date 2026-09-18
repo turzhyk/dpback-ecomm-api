@@ -1,6 +1,6 @@
 ﻿namespace DPBack.Application.Contracts;
 
-public record UserAddressModifyDto(
+public record CustomerAddressModifyRequest(
     string? Country,
     string? City,
     string? Street,
