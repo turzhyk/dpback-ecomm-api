@@ -43,38 +43,29 @@ namespace DPBack.Application.Services
         };
 
 
-        public ValueTask<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken cToken)
-        {
-            if (cache.TryGetValue(OrdersCacheKey, out IReadOnlyList<OrderResponse>? cachedOrders) &&
-                cachedOrders != null)
-            {
-                return new ValueTask<IReadOnlyList<OrderResponse>>(cachedOrders);
-            }
-            else return new ValueTask<IReadOnlyList<OrderResponse>>(FetchAndCatchAllOrdersAsync(cToken));
-        }
+        // public ValueTask<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken cToken)
+        // {
+        //     if (cache.TryGetValue(OrdersCacheKey, out IReadOnlyList<OrderResponse>? cachedOrders) &&
+        //         cachedOrders != null)
+        //     {
+        //         return new ValueTask<IReadOnlyList<OrderResponse>>(cachedOrders);
+        //     }
+        //     else return new ValueTask<IReadOnlyList<OrderResponse>>(FetchAndCatchAllOrdersAsync( cToken));
+        // }
 
-        private async Task<IReadOnlyList<OrderResponse>> FetchAndCatchAllOrdersAsync(CancellationToken cToken)
-        {
-            var orders = await ordersRepo.GetAll(cToken, 0, 0);
-            var response = orders.Select(o =>
-                o.ToDto()).ToList();
-            cache.Set(OrdersCacheKey, response.AsReadOnly(), TimeSpan.FromMinutes(10));
-            return response;
-        }
-
-        public async Task<PagedResponse<OrderResponse>> GetFilteredAsync(OrdersFilteredRequestDto request,
-            CancellationToken cToken)
+        private async Task<PagedResponse<OrderResponse>> FetchAndCatchAllFilteredOrdersAsync(
+            OrdersFilteredRequestDto request, CancellationToken cToken)
         {
             var skip = (request.PageNumber - 1) * request.PageSize;
             logger.LogInformation("Requesting {pageSize} orders for page nr. {pageNumber}",
                 request.PageSize,
                 request.PageNumber);
-
-            var orders = await ordersRepo.GetAll(cToken, skip, request.PageSize, request.Status);
+            var take = Math.Min(request.PageSize, 100);
+            var orders = await ordersRepo.GetAll(cToken, skip, take, request.Status);
 
             var totalCount = await ordersRepo.Count(cToken);
             var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
-            return new PagedResponse<OrderResponse>
+            var response = new PagedResponse<OrderResponse>
             {
                 Items = orders.Select(o => o.ToDto()).ToList(),
                 TotalItems = totalCount,
@@ -82,6 +73,22 @@ namespace DPBack.Application.Services
                 PageSize = request.PageSize,
                 TotalPages = totalPages
             };
+            cache.Set(OrdersCacheKey, response, TimeSpan.FromMinutes(10));
+            return response;
+        }
+
+        public ValueTask<PagedResponse<OrderResponse>> GetFilteredAsync(OrdersFilteredRequestDto request,
+            CancellationToken cToken)
+        {
+            if (cache.TryGetValue(OrdersCacheKey, out PagedResponse<OrderResponse>? cachedOrders) &&
+                cachedOrders is not null && cachedOrders.PageIndex == request.PageNumber &&
+                cachedOrders.PageSize == request.PageSize)
+            {
+                return new ValueTask<PagedResponse<OrderResponse>>(cachedOrders);
+            }
+            else
+                return new ValueTask<PagedResponse<OrderResponse>>(
+                    FetchAndCatchAllFilteredOrdersAsync(request, cToken));
         }
 
         public async Task<OrderResponse> GetByIdAsync(Guid userId, Guid orderId, CancellationToken cToken)
@@ -193,6 +200,7 @@ namespace DPBack.Application.Services
                     ChangedAt = DateTime.UtcNow
                 };
                 await ordersRepo.ChangeStatus(orderId, author, newStatus, history, cToken);
+                cache.Remove(OrdersCacheKey);
             }
             else
                 throw new StatusChangeNotAllowedException();
@@ -217,6 +225,7 @@ namespace DPBack.Application.Services
             logger.LogInformation("Changing order {orderId} payment status from {oldStatus} to {newStatus}",
                 orderId, order.PaymentStatus, status);
             await ordersRepo.SetPaymentStatus(orderId, status, cToken);
+            cache.Remove(OrdersCacheKey);
         }
 
         public async Task AssignToUserAsync(Guid orderId, string author, CancellationToken cToken)

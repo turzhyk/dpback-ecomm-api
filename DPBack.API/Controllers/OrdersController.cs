@@ -17,16 +17,7 @@ namespace DPBack.API.Controllers
                 return null;
             return Guid.Parse(userId);
         }
-
-        [HttpGet]
-        [Authorize(Roles = "Admin, Worker")]
-        // Use with caution (could be a lot of data)
-        public async Task<ActionResult<List<OrderResponse>>> GetOrdersAsync(CancellationToken cToken)
-        {
-            var result = await service.GetAllAsync(cToken);
-            
-            return Ok(result);
-        }
+        
         [HttpGet(("paged"))]
         [Authorize]
         public async Task<ActionResult<List<OrderResponse>>> GetOrdersFiltered([FromQuery]OrdersFilteredRequestDto request,CancellationToken cToken)
@@ -84,7 +75,7 @@ namespace DPBack.API.Controllers
         }
 
         [HttpPost("{id}/suspend")]
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> SuspendOrder(Guid id, CancellationToken cToken)
         {
             await service.SuspendOrderAsync(id, cToken);

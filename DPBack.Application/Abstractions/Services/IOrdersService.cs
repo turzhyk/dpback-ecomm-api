@@ -11,8 +11,7 @@ namespace DPBack.Application.Abstractions
     public interface IOrdersService
     {
         Task<CreateOrderResponse> CreateAsync(Guid? userId,CreateOrderRequest createOrder, CancellationToken cToken);
-        ValueTask<IReadOnlyList<OrderResponse>> GetAllAsync(CancellationToken cToken);
-        Task<PagedResponse<OrderResponse>> GetFilteredAsync(OrdersFilteredRequestDto request, CancellationToken cToken);
+        ValueTask<PagedResponse<OrderResponse>> GetFilteredAsync(OrdersFilteredRequestDto request, CancellationToken cToken);
         Task<OrderResponse> GetByIdAsync(Guid userId,Guid orderId, CancellationToken cToken);
         Task AssignToUserAsync(Guid orderId, string author, CancellationToken cToken);
         Task SetPaymentStatusAsync(Guid orderId, OrderPaymentStatus status, CancellationToken cToken);
