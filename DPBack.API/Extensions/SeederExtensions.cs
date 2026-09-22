@@ -8,19 +8,18 @@ namespace DPBack.API.Extensions;
 
 public static class SeederExtensions
 {
-    public static async Task SeedDBAsync(this WebApplication app, IConfiguration configuration)
+    public static async Task SeedDbAsync(this WebApplication app, IConfiguration configuration)
     {
-        using (var scope = app.Services.CreateScope())
-        {
-            Console.WriteLine("START MIGRATION");
-            var orderDb = scope.ServiceProvider.GetRequiredService<OrderStoreDbContext>();
-            await orderDb.Database.MigrateAsync();
-            var userDb = scope.ServiceProvider.GetRequiredService<UserStoreDbContext>();
-            await userDb.Database.MigrateAsync();
-            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
-            await UserSeeder.SeedAsync(userDb, passwordHasher, configuration);
-            await CustomerSeeder.SeedAsync(orderDb);
-            Console.WriteLine("MIGRATION DONE");
-        }
+        using var scope = app.Services.CreateScope();
+
+        Console.WriteLine("START MIGRATION");
+        var orderDb = scope.ServiceProvider.GetRequiredService<OrderStoreDbContext>();
+        await orderDb.Database.MigrateAsync();
+        var userDb = scope.ServiceProvider.GetRequiredService<UserStoreDbContext>();
+        await userDb.Database.MigrateAsync();
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<User>>();
+        await UserSeeder.SeedAsync(userDb, passwordHasher, configuration);
+        await CustomerSeeder.SeedAsync(orderDb);
+        Console.WriteLine("MIGRATION DONE");
     }
 }

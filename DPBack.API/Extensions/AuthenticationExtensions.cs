@@ -10,7 +10,8 @@ namespace DPBack.API.Extensions;
 
 public static class AuthenticationExtensions
 {
-    public static IServiceCollection AddAuthorizationServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddAuthorizationServices(this IServiceCollection services,
+        IConfiguration configuration)
 
     {
         var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>();
@@ -31,7 +32,7 @@ public static class AuthenticationExtensions
             };
         });
         services.AddAuthorization();
-       services.AddSingleton<ITokenProvider,TokenProvider>();
+        services.AddSingleton<ITokenProvider, TokenProvider>();
         return services;
     }
 }

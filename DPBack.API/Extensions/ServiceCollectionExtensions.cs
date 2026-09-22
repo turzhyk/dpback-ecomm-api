@@ -7,10 +7,6 @@ using DPBack.Application.Pricing;
 using DPBack.Application.Pricing.Calculators;
 using DPBack.Application.Services;
 using DPBack.Domain.Models;
-using DPBack.Infrastructure.PayU;
-using DPBack.Infrastructure.QuestPdfGenerator;
-using DPBack.Infrastructure.Repositories;
-using DPBack.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 
 namespace DPBack.API.Extensions;
@@ -21,15 +17,12 @@ public static class ServiceCollectionExtensions
     )
     {
         services.AddScoped<IOrdersService, OrdersService>();
-        services.AddScoped<IOrdersRepository, OrdersRepository>();
+       
         services.AddScoped<IPriceCalcService, PriceCalcService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IUsersRepository, UsersRepository>();
         services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
         services.AddScoped<IProductsService, ProductsService>();
         services.AddScoped<IReceiptService, OrderReceiptService>();
-        services.AddScoped<IReceiptGenerator, QuestPdfReceiptGenerator>();
-        services.AddScoped<IEmailSender, MailKitEmailSender>();
 
         services.AddMemoryCache();
 
@@ -49,11 +42,6 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<PriceCalculatorStrategy>();
         services.AddScoped<IProductConfigMapperResolver,ProductConfigMapperResolver>();
-
-        services.AddSingleton<IPaymentTokenProvider, PayUTokenProvider>();
-        
-        
-       
         return services;
     }
 }

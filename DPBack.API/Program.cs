@@ -5,9 +5,8 @@ using System.Text.Json.Serialization;
 using DPBack.API.Extensions;
 using DPBack.API.Middleware;
 using DPBack.Application.Abstractions;
-using DPBack.Infrastructure.Payments;
+using DPBack.Infrastructure;
 using Microsoft.OpenApi.Models;
-using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,13 +48,12 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 builder.Services.AddDatabase(configuration);
+builder.Services.AddInfrastructure(configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddBackgroundServices();
 builder.Services.AddAuthorizationServices(configuration);
-builder.Services.AddHttpClient<IPaymentService, PayUService>(client =>
-{
-    client.BaseAddress = new Uri(configuration["PayU:BaseAddress"]!);
-});
+
+
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -69,9 +67,15 @@ builder.Services.AddSingleton(new JsonSerializerOptions
     PropertyNameCaseInsensitive = true,
     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
 });
-QuestPDF.Settings.License = LicenseType.Community;
+
 var app = builder.Build();
-await app.SeedDBAsync(configuration);
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
+    await dbInitializer.InitializeDatabaseAsync();
+}
+// Deprecated
+// await app.SeedDbAsync(configuration);
 
 if (app.Environment.IsDevelopment())
 {
