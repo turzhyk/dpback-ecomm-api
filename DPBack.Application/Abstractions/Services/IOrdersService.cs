@@ -28,6 +28,6 @@ namespace DPBack.Application.Abstractions
         
         Task<List<CustomerAddressResponse>> GetAddressesByCustomerIdAsync(Guid id, CancellationToken cToken);
         Task<Guid> AddCustomerAddressAsync(Guid userId, CustomerAddressCreateRequest request, CancellationToken cToken);
-        Task ModifyCustomerAddressAsync(Guid userId, Guid addressId, CustomerAddressModifyRequest request, CancellationToken cToken);
+        Task ModifyCustomerAddressAsync(Guid addressId, CustomerAddressModifyRequest request, CancellationToken cToken);
     }
 }

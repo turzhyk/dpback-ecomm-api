@@ -10,8 +10,8 @@ namespace DPBack.Application.Contracts
         public required string BuildingNumber { get; init; }
         public string? ApartmentNumber { get; init; }
         public required string PostalCode { get; init; }
-        public required string PhoneNumber { get; init; }
-        public required string Email { get; init; }
-        public required string? Options { get; init; }
+        public string? PhoneNumber { get; init; }
+        public string? Email { get; init; }
+        public string? Options { get; init; }
     }
 }

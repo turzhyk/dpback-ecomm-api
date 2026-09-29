@@ -328,13 +328,13 @@ namespace DPBack.Application.Services
             return guid;
         }
 
-        public async Task ModifyCustomerAddressAsync(Guid userId, Guid addressId, CustomerAddressModifyRequest request,
+        public async Task ModifyCustomerAddressAsync( Guid addressId, CustomerAddressModifyRequest request,
             CancellationToken cToken)
         {
-            var userExists = await ordersRepo.CustomerExistsAsync(userId, cToken);
+           
             var address = await ordersRepo.GetCustomerAddressByIdAsync(addressId, cToken);
-            if (!userExists || address is null)
-                throw new KeyNotFoundException("user or/and address not found");
+            if (address is null)
+                throw new KeyNotFoundException("address not found");
 
 
             address.Country = request.Country ?? address.Country;

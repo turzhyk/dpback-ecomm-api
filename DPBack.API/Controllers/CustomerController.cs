@@ -52,11 +52,10 @@ public class CustomerController(IOrdersService ordersService) : ControllerBase
         return Ok();
     }
     [HttpPatch("addresses/{addressId}")]
-    [Authorize]
-    public async Task<ActionResult> ChangeCustomerAddress(Guid addressId, [FromBody] CustomerAddressCreateRequest request, CancellationToken cToken)
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> ChangeCustomerAddress(Guid addressId, [FromBody] CustomerAddressModifyRequest request, CancellationToken cToken)
     {
-        // var CustomerId = GetCurrentCustomerId();
-        // Implement later
+        await ordersService.ModifyCustomerAddressAsync(addressId, request, cToken);
         return Ok();
     }
     [HttpDelete("addresses/{addressId}")]
