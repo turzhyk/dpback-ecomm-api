@@ -8,5 +8,6 @@ namespace DPBack.Application.Abstractions;
 public interface IPriceCalculator
 {
     public OrderItemType Type { get; }
-    public decimal CalculateUnitPrice(ProductConfig abstractConfig);
+    public decimal CalculateUnitPrice(ProductConfig? abstractConfig);
+    
 }

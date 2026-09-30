@@ -17,8 +17,9 @@ public class PaymentController(
     IOptions<PayUOptions> options,
     IOrdersService ordersService,
     IPaymentService paymentService,
-    IReceiptService receiptService, ChannelWriter<Guid> channelWriter)
-    : Controller
+    IReceiptService receiptService,
+    ChannelWriter<Guid> channelWriter)
+    : ControllerBase
 {
     private readonly PayUOptions _options = options.Value;
 
@@ -35,7 +36,7 @@ public class PaymentController(
             return BadRequest();
 
 
-        if (!SignatureVerificator.Verify(rawBody, signatureHeader, _options.SecondKey))
+        if (!SignatureVerificator.Verify(rawBody, signatureHeader!, _options.SecondKey))
             return Unauthorized();
 
         var dto = JsonSerializer.Deserialize<PayUWebhookDto>(rawBody);
@@ -45,11 +46,10 @@ public class PaymentController(
         var orderId = dto.Order.ExtOrderId;
         var payuOrderId = dto.Order.OrderId;
         var status = dto.Order.Status;
-
+        var currentStatus = await ordersService.GetPaymentStatusAsync(new Guid(orderId), cToken);
         switch (status)
         {
             case ("WAITING_FOR_CONFIRMATION"):
-                var currentStatus = await ordersService.GetPaymentStatusAsync(new Guid(orderId), cToken);
                 if (currentStatus == OrderPaymentStatus.Waiting)
                     await paymentService.CapturePayment(payuOrderId);
                 break;
@@ -58,6 +58,9 @@ public class PaymentController(
                 break;
             case "COMPLETED":
                 await ordersService.SetPaymentStatusAsync(new Guid(orderId), OrderPaymentStatus.Paid, cToken);
+
+                if (currentStatus == OrderPaymentStatus.Paid) return Ok();
+                
                 var taskId = await receiptService.CreateReceiptTaskAsync(new Guid(orderId), cToken);
                 await channelWriter.WriteAsync(taskId, cToken);
                 break;

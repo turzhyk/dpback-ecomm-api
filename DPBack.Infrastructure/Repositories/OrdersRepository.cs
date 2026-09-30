@@ -386,5 +386,7 @@ namespace DPBack.Infrastructure.Repositories
             entity.Options = address.Options;
             await context.SaveChangesAsync(cToken);
         }
+
+        public async Task SaveChangesAsync(CancellationToken cToken) => await context.SaveChangesAsync(cToken);       
     }
 }

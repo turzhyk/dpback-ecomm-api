@@ -52,7 +52,7 @@ public class PayUService(
                 new { name = "Order", unitPrice =  Convert.ToInt32(totalPrice * 100m), quantity = "1" }
             }
         };
-
+        Console.WriteLine(payuOrder);
         var response = await client.PostAsJsonAsync("/api/v2_1/orders", payuOrder);
 
         var content = await response.Content.ReadAsStringAsync();

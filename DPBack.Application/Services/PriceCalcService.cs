@@ -22,8 +22,6 @@ public class PriceCalcService(PriceCalculatorStrategy strategy, IProductConfigMa
     }
     public decimal Calculate(OrderItem item)
     {
-        if (item.Options is null)
-            return 0;
         var calculator = strategy.Get(item.Type);
         var result = calculator.CalculateUnitPrice(item.Options);
         return result;

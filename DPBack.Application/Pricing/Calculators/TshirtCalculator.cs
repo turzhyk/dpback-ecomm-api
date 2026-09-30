@@ -8,9 +8,8 @@ namespace DPBack.Application.Pricing.Calculators;
 public class TshirtCalculator:IPriceCalculator
 {
     public OrderItemType Type => OrderItemType.Tshirt;
-    public decimal CalculateUnitPrice(ProductConfig abstractConfig)
+    public decimal CalculateUnitPrice(ProductConfig? abstractConfig)
     {
         return 45m;
-       
     }
 }

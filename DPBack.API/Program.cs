@@ -23,7 +23,7 @@ builder.Services.AddSwaggerGen(o =>
             Type = SecuritySchemeType.Http,
             Scheme = "bearer",
             BearerFormat = "Jwt",
-            Description = "Enter jwt",
+            Description = "JWT token: bearer {token}",
             In=ParameterLocation.Header
         });
     o.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -52,6 +52,7 @@ builder.Services.AddInfrastructure(configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddBackgroundServices();
 builder.Services.AddAuthorizationServices(configuration);
+builder.Services.AddHealthChecks();
 
 
 builder.Services
@@ -74,9 +75,6 @@ using (var scope = app.Services.CreateScope())
     var dbInitializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
     await dbInitializer.InitializeDatabaseAsync();
 }
-// Deprecated
-// await app.SeedDbAsync(configuration);
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -84,14 +82,16 @@ if (app.Environment.IsDevelopment())
 }
 app.Use(async (context, next) =>
 {
+    //For Payment Notify request verification
     context.Request.EnableBuffering();
     await next();
 });
-app.UseCors();
 app.UseMiddleware<GlobalExceptionHandler>();
+app.UseCors();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 app.Run();

@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPriceCalculator, BusinesscardCalculator>();
         services.AddScoped<IPriceCalculator, OpeningHoursStickerCalculator>();
         services.AddScoped<IPriceCalculator, TshirtCalculator>();
+        services.AddScoped<IPriceCalculator, TestCalculator>();
 
         var channel = Channel.CreateUnbounded<Guid>(new UnboundedChannelOptions
             { SingleReader = true});

@@ -4,4 +4,5 @@ public class Pricing
 {
     public required BusinesscardPricing Businesscard { get; set; } 
     public required OpeningHoursStickerPricing OpeningHoursSticker { get; set; } 
+    public required TestPricing Test { get; set; }
 }

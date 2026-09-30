@@ -1,5 +1,6 @@
 using DPBack.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DPBack.API.Middleware;
 
@@ -13,7 +14,7 @@ public sealed class GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalE
         }
         catch (OperationCanceledException)
         {
-            logger.LogInformation("Request was canceled by client");
+            logger.LogInformation("Request was cancelewd by client");
             context.Response.StatusCode = 499;
         }
         catch (Exception error)
@@ -35,17 +36,23 @@ public sealed class GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalE
             CustomerDoesNotExistException => (StatusCodes.Status404NotFound, "Customer does not exist"),
             InvalidJsonValuesException => (StatusCodes.Status400BadRequest, "Invalid Json Value"),
             OrderDoesNotExistException => (StatusCodes.Status404NotFound, "Order does not exist"),
+            DbUpdateConcurrencyException =>(StatusCodes.Status409Conflict, "Concurrency error. Try again"),
+           
             _ => (StatusCodes.Status500InternalServerError, "Internal server error")
         };
+        
         context.Response.StatusCode = statusCode;
         var problemDetails = new ProblemDetails
         {
             Title = title,
             Status = statusCode,
             Type = error.GetType().Name,
-            Detail = statusCode == 500 ? null : error.Message
+            Detail = statusCode == 500 ? null : error.Message,
+            Extensions =
+            {
+                ["traceId"] = context.TraceIdentifier
+            }
         };
-        problemDetails.Extensions["traceId"] = context.TraceIdentifier;
         return context.Response.WriteAsJsonAsync(problemDetails);
     }
 }

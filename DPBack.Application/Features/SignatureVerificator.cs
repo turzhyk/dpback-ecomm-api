@@ -19,7 +19,7 @@ public static class SignatureVerificator
         var data = rawBody + secondKey;
 
         string computed;
-        
+
 
         if (algorithm == "MD5")
         {
@@ -33,13 +33,7 @@ public static class SignatureVerificator
             throw new Exception("Unsupported algorithm");
         }
         var bytes = Encoding.UTF8.GetBytes(rawBody);
-
-        // Console.WriteLine($"RAW LENGTH: {bytes.Length}");
-        // Console.WriteLine($"RAW (HEX): {BitConverter.ToString(bytes)}");
-        // Console.WriteLine($"SECOND KEY: {secondKey}");
-        // Console.WriteLine($"DATA (HEX): {BitConverter.ToString(Encoding.UTF8.GetBytes(rawBody + secondKey))}");
-        // Console.WriteLine($"INCOMING: {incomingSignature}");
-        // Console.WriteLine($"COMPUTED: {computed}");
-        return computed == incomingSignature;
+        return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(computed),
+            Encoding.UTF8.GetBytes(incomingSignature));
     }
 }

@@ -7,16 +7,11 @@ using Microsoft.Extensions.Options;
 namespace DPBack.Infrastructure.PayU;
 
 
-public class PayUTokenProvider:IPaymentTokenProvider
+public class PayUTokenProvider(IOptions<PayUOptions> options) : IPaymentTokenProvider
 {
     private string? _token;
     private DateTime _expires;
-    private readonly PayUOptions _options;
-
-    public PayUTokenProvider(IOptions<PayUOptions> options)
-    {
-        _options = options.Value;
-    }
+    private readonly PayUOptions _options = options.Value;
 
     public async Task<string?> GetToken()
     {

@@ -8,14 +8,9 @@ using Microsoft.Extensions.Options;
 
 namespace DPBack.Application.Pricing.Calculators;
 
-public class OpeningHoursStickerCalculator : IPriceCalculator
+public class OpeningHoursStickerCalculator(IOptions<OpeningHoursStickerPricing> pricing) : IPriceCalculator
 {
-    private readonly OpeningHoursStickerPricing _pricing;
-
-    public OpeningHoursStickerCalculator(IOptions<OpeningHoursStickerPricing> pricing)
-    {
-        _pricing = pricing.Value;
-    }
+    private readonly OpeningHoursStickerPricing _pricing = pricing.Value;
 
     public OrderItemType Type => OrderItemType.OpeningHoursSticker;
 

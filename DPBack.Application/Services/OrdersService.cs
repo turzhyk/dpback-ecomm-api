@@ -135,6 +135,8 @@ namespace DPBack.Application.Services
                 totalPrice += unitPrice * i.Quantity;
             }
 
+            if (totalPrice == 0)
+               throw new InvalidOperationException("PRICE IS 0, CHECK CALCULATORS");
             var paymentStatus = request.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
             var orderId = Guid.NewGuid();
             var initHistoryElement = new OrderHistoryElement
