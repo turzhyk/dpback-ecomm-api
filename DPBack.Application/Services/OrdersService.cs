@@ -15,6 +15,7 @@ namespace DPBack.Application.Services
 {
     public class OrdersService(
         IOrdersRepository ordersRepo,
+        IPaymentObjectRepository paymentRepo,
         IPaymentService paymentService,
         IPriceCalcService priceCalcService,
         ILogger<OrdersService> logger,
@@ -136,7 +137,7 @@ namespace DPBack.Application.Services
             }
 
             if (totalPrice == 0)
-               throw new InvalidOperationException("PRICE IS 0, CHECK CALCULATORS");
+                throw new InvalidOperationException("PRICE IS 0, CHECK CALCULATORS");
             var paymentStatus = request.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
             var orderId = Guid.NewGuid();
             var initHistoryElement = new OrderHistoryElement
@@ -171,7 +172,7 @@ namespace DPBack.Application.Services
             }
             else
             {
-                var paymentUrl = await paymentService.CreatePayment(order.Id.ToString(), totalPrice);
+                var paymentUrl = await paymentService.CreatePaymentAsync(order.Id.ToString(), totalPrice, cToken);
                 return new CreateOrderResponse(order.Id, paymentUrl);
             }
         }
@@ -202,6 +203,7 @@ namespace DPBack.Application.Services
                     ChangedAt = DateTime.UtcNow
                 };
                 await ordersRepo.ChangeStatus(orderId, author, newStatus, history, cToken);
+                
                 cache.Remove(OrdersCacheKey);
             }
             else
@@ -330,10 +332,9 @@ namespace DPBack.Application.Services
             return guid;
         }
 
-        public async Task ModifyCustomerAddressAsync( Guid addressId, CustomerAddressModifyRequest request,
+        public async Task ModifyCustomerAddressAsync(Guid addressId, CustomerAddressModifyRequest request,
             CancellationToken cToken)
         {
-           
             var address = await ordersRepo.GetCustomerAddressByIdAsync(addressId, cToken);
             if (address is null)
                 throw new KeyNotFoundException("address not found");
@@ -350,6 +351,14 @@ namespace DPBack.Application.Services
             address.Options = request.Options ?? address.Options;
 
             await ordersRepo.UpdateCustomerAddressAsync(addressId, address, cToken);
+        }
+
+        public async Task<string?> GetPaymentLinkAsync(Guid orderId, CancellationToken cToken)
+        {
+            var payment = await paymentRepo.GetPaymentByOrderAsync(orderId, cToken);
+            if (payment is null)
+                throw new KeyNotFoundException($"payment/order {orderId} not found");
+            return payment.PaymentLink;
         }
     }
 }

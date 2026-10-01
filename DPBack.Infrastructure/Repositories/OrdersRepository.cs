@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DPBack.Infrastructure.Repositories
 {
     public class OrdersRepository(OrderStoreDbContext context, IProductConfigMapperResolver mapper)
-        : IOrdersRepository
+        : IOrdersRepository, IPaymentObjectRepository
 
     {
         private static Order MapToOrder(OrderEntity e, IProductConfigMapperResolver mapper)
@@ -348,7 +348,8 @@ namespace DPBack.Infrastructure.Repositories
 
         public async Task AddCustomerAddressAsync(CustomerAddress address, CancellationToken cToken)
         {
-            var entity = new CustomerAddressEntity(address.Id, address.UserId, address.Country, address.City, address.Street,
+            var entity = new CustomerAddressEntity(address.Id, address.UserId, address.Country, address.City,
+                address.Street,
                 address.BuildingNumber, address.ApartmentNumber, address.PostalCode, address.PhoneNumber, address.Email,
                 address.Options);
 
@@ -387,6 +388,38 @@ namespace DPBack.Infrastructure.Repositories
             await context.SaveChangesAsync(cToken);
         }
 
-        public async Task SaveChangesAsync(CancellationToken cToken) => await context.SaveChangesAsync(cToken);       
+        public async Task SaveChangesAsync(CancellationToken cToken) => await context.SaveChangesAsync(cToken);
+
+        public async Task<PaymentObject?> GetPaymentByOrderAsync(Guid orderId, CancellationToken cToken)
+        {
+            var result = await context.Payments
+                .Where(x => x.OrderId == orderId)
+                .FirstOrDefaultAsync(cToken);
+            return result;
+        }
+
+        public async Task<PaymentObject?> GetPaymentByIdAsync(Guid id, CancellationToken cToken)
+        {
+            var result = await context.Payments
+                .Where(x => x.Id == id)
+                .FirstOrDefaultAsync(cToken);
+            return result;
+        }
+
+        public async Task AddPaymentAsync(PaymentObject payment, CancellationToken cToken) =>
+            await context.Payments.AddAsync(payment, cToken);
+
+
+        public async Task UpdateAsync(PaymentObject payment, CancellationToken cToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task DeletePaymentAsync(Guid id, CancellationToken cToken)
+        {
+            await context.Payments
+                .Where(x => x.Id == id)
+                .ExecuteDeleteAsync(cToken);
+        }
     }
 }

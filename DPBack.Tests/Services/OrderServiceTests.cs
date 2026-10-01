@@ -17,6 +17,7 @@ namespace DPBack.Tests.Services;
 public class OrderServiceTests
 {
     private readonly Mock<IOrdersRepository> _mockRepository;
+    private readonly Mock<IPaymentObjectRepository> _mockPaymentRepo;
     private readonly Mock<ILogger<OrdersService>> _mockLogger;
     private readonly Mock<IPaymentService> _mockPaymentService;
     private readonly Mock<IPriceCalcService> _mockCalculator;
@@ -27,12 +28,14 @@ public class OrderServiceTests
     public OrderServiceTests()
     {
         _mockRepository = new Mock<IOrdersRepository>();
+        _mockPaymentRepo = new Mock<IPaymentObjectRepository>();
         _mockLogger = new Mock<ILogger<OrdersService>>();
         _mockCalculator = new Mock<IPriceCalcService>();
         _mockPaymentService = new Mock<IPaymentService>();
         _mockMapper = new Mock<IProductConfigMapperResolver>();
         _mockCache = new Mock<IMemoryCache>();
-        _service = new OrdersService(_mockRepository.Object, _mockPaymentService.Object, _mockCalculator.Object,
+        _service = new OrdersService(_mockRepository.Object, _mockPaymentRepo.Object, _mockPaymentService.Object,
+            _mockCalculator.Object,
             _mockLogger.Object, _mockMapper.Object, _mockCache.Object);
     }
 
@@ -47,7 +50,7 @@ public class OrderServiceTests
         }, false, existingCustomerId);
 
         _mockPaymentService.Setup(x =>
-            x.CreatePayment(It.IsAny<string>(), It.IsAny<decimal>())).ReturnsAsync("link");
+            x.CreatePaymentAsync(It.IsAny<string>(), It.IsAny<decimal>(), CancellationToken.None)).ReturnsAsync("link");
         _mockCalculator.Setup(x =>
             x.Calculate(It.IsAny<OrderItemRequest>())).Returns(10m);
         _mockRepository.Setup(x => x.CustomerExistsAsync(existingCustomerId, CancellationToken.None))

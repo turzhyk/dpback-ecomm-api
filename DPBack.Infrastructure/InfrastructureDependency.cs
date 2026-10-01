@@ -14,17 +14,21 @@ public static class InfrastructureDependency
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IOrdersRepository, OrdersRepository>();
+        services.AddScoped<OrdersRepository>();
+        services.AddScoped<IOrdersRepository>(provider => provider.GetRequiredService<OrdersRepository>());
+        services.AddScoped<IPaymentObjectRepository>(provider => provider.GetRequiredService<OrdersRepository>());
         services.AddScoped<IUsersRepository, UsersRepository>();
         services.AddScoped<IReceiptGenerator, QuestPdfReceiptGenerator>();
         services.AddScoped<IEmailSender, MailKitEmailSender>();
         services.AddSingleton<IPaymentTokenProvider, PayUTokenProvider>();
         services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
-        services.AddHttpClient<IPaymentService, PayUService>(client =>
-        {
-            client.BaseAddress = new Uri(configuration["PayU:BaseAddress"]!);
-        });
-        
+        services.AddScoped<IPaymentService, PayUService>();
+        services.AddHttpClient("PayU", client => { client.BaseAddress = new Uri(configuration["PayU:BaseAddress"]!); })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AllowAutoRedirect = false
+            });
+
         QuestPDF.Settings.License = LicenseType.Community;
         return services;
     }

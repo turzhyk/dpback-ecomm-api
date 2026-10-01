@@ -5,12 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DPBack.Infrastructure.Contexts
 {
-    public class OrderStoreDbContext : DbContext
+    public class OrderStoreDbContext(DbContextOptions<OrderStoreDbContext> options) : DbContext(options)
     {
-        public OrderStoreDbContext(DbContextOptions<OrderStoreDbContext> options) : base(options)
-        {
-        }
-
         public DbSet<OrderEntity> Orders { get; set; }
         public DbSet<OrderItemEntity> OrderItems { get; set; }
         public DbSet<OrderHistoryElementEntity> OrderStatusHistories { get; set; }
@@ -19,29 +15,39 @@ namespace DPBack.Infrastructure.Contexts
         public DbSet<CustomerEntity> Customers { get; set; }
         public DbSet<CustomerAddressEntity> CustomerAddresses { get; set; }
         public DbSet<OrderReceiptTaskEntity> OrderReceiptTasks { get; set; }
+        public DbSet<PaymentObject> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasSequence<int>("OrderNumbers")
+            modelBuilder
+                .HasSequence<int>("OrderNumbers")
                 .StartsAt(10001)
                 .IncrementsBy(1);
 
-            modelBuilder.Entity<OrderEntity>()
+            modelBuilder
+                .Entity<OrderEntity>()
                 .Property(o => o.OrderNumber)
                 .HasDefaultValueSql("nextval('\"OrderNumbers\"')");
-            modelBuilder.Entity<OrderEntity>()
+            modelBuilder
+                .Entity<OrderEntity>()
                 .Property(p => p.RowVersion)
                 .IsRowVersion()
                 .HasColumnName("xmin");
 
 
-            modelBuilder.Entity<CustomerEntity>().HasIndex(x => x.Phone).IsUnique();
+            modelBuilder
+                .Entity<CustomerEntity>()
+                .HasIndex(x => x.Phone)
+                .IsUnique();
             modelBuilder.Entity<OrderItemEntity>(builder =>
             {
-                builder.Property(x => x.Options)
+                builder
+                    .Property(x => x.Options)
                     .HasColumnType("text");
-                builder.HasKey(x => x.Id);
-                builder.HasOne(x => x.Order)
+                builder
+                    .HasKey(x => x.Id);
+                builder
+                    .HasOne(x => x.Order)
                     .WithMany(o => o.Items)
                     .HasForeignKey(x => x.OrderId)
                     .IsRequired()
@@ -50,29 +56,47 @@ namespace DPBack.Infrastructure.Contexts
 
 
             modelBuilder.Entity<OrderReceiptTaskEntity>(builder =>
-                {
-                    builder.HasKey(o => o.Id);
-                    builder.HasOne(o => o.Order)
-                        .WithMany()
-                        .HasForeignKey(o => o.OrderId)
-                        .IsRequired()
-                        .OnDelete(DeleteBehavior.Cascade);
-                }
-            );
+            {
+                builder
+                    .HasKey(o => o.Id);
+                builder
+                    .HasOne(o => o.Order)
+                    .WithMany()
+                    .HasForeignKey(o => o.OrderId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
             modelBuilder.Entity<OrderHistoryElementEntity>(builder =>
             {
-                builder.HasKey(x => x.Id);
-                builder.HasOne(x => x.Order)
+                builder
+                    .HasKey(x => x.Id);
+                builder
+                    .HasOne(x => x.Order)
                     .WithMany(x => x.History)
                     .HasForeignKey(x => x.OrderId)
                     .IsRequired();
             });
             modelBuilder.Entity<CustomerAddressEntity>(builder =>
             {
-                builder.HasKey(x => x.Id);
-                builder.HasOne(x => x.Customer)
+                builder
+                    .HasKey(x => x.Id);
+                builder
+                    .HasOne(x => x.Customer)
                     .WithMany(x => x.Addresses)
                     .HasForeignKey(x => x.CustomerId).IsRequired();
+            });
+            modelBuilder.Entity<PaymentObject>(builder =>
+            {
+                builder
+                    .HasKey(x => x.Id);
+                // builder
+                //     .HasOne(x => x.Order)
+                //     .WithMany()
+                //     .HasForeignKey(x => x.OrderId);
+                // builder
+                //     .HasOne(x => x.Customer)
+                //     .WithMany()
+                //     .HasForeignKey(x => x.CustomerId);
             });
         }
     }

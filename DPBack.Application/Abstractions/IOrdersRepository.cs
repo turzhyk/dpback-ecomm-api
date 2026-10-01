@@ -36,7 +36,7 @@ namespace DPBack.Application.Abstractions
         Task<bool> CustomerAddressWithIdExists(Guid id, CancellationToken cToken);
         Task<CustomerAddress?> GetCustomerAddressByIdAsync(Guid id, CancellationToken cToken);
         Task UpdateCustomerAddressAsync(Guid addressId, CustomerAddress dto, CancellationToken cToken);
-
+        
         Task SaveChangesAsync(CancellationToken cToken);
     }
     

@@ -88,5 +88,12 @@ namespace DPBack.API.Controllers
             var fileName = $"receipt_for_{id}.pdf";
             return File(result, "application/pdf", fileName);
         }
+
+        [HttpGet("{id}/payment")]
+        public async Task<string?> GetPaymentLink(Guid id, CancellationToken cToken)
+        {
+            throw new NotImplementedException()
+                ;
+        }
     }
 }
