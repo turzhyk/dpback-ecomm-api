@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using DPBack.Application.Contracts;
 using DPBack.Application.Abstractions;
-using DPBack.Application.Contracts.User.Response;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +29,9 @@ public class UsersController(IUserService service) : ControllerBase
         var id = await service.CreateUserAsync(request, cToken);
         return Ok(id);
     }
-
+    /// <summary>
+    /// Development admin account: admin@local, 0000
+    /// </summary>
     [HttpPost("login")]
     public async Task<ActionResult<UserLoginResponse>> LoginUser([FromBody] UserLoginRequest request, CancellationToken cToken)
     {
@@ -44,7 +46,7 @@ public class UsersController(IUserService service) : ControllerBase
         }
     }
     [AllowAnonymous]
-    [HttpGet("refresh")]
+    [HttpPost("refresh")]
     public async Task<ActionResult<UserLoginResponse>> RefreshToken(string oldRefreshToken, CancellationToken cToken)
     {
         var result = await service.RefreshToken(oldRefreshToken, cToken);

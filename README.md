@@ -38,6 +38,7 @@ Clean Architecture with 4 layers:
 - Strategy pattern for price calculators. Adding new product type requires only a new class implementing
   IPriceCalculator
 - PayU webhook ("notify") signature verification via HMAC
+- Used FixedTimeEquals to prevent timing attacks then verifying PayU signature
 - Global exception handler middleware for forming precise request responses / hiding stack traces
 
 ## Getting started

@@ -28,7 +28,7 @@ public class CustomerController(IOrdersService ordersService) : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("by-phone/{phone}")]
+    [HttpGet("by-phone")]
     public async Task<ActionResult<CustomerResponseDto?>> GetByPhone(string phone, CancellationToken cToken)
     {
         var result = await ordersService.GetCustomerByPhoneAsync(phone, cToken);

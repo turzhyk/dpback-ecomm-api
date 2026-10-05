@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -26,6 +27,11 @@ builder.Services.AddSwaggerGen(o =>
             Description = "JWT token: bearer {token}",
             In=ParameterLocation.Header
         });
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+    o.IncludeXmlComments(xmlPath);
+   
     o.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {

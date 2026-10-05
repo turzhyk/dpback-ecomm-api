@@ -18,7 +18,7 @@ namespace DPBack.API.Controllers
             return Guid.Parse(userId);
         }
         
-        [HttpGet(("paged"))]
+        [HttpGet]
         [Authorize]
         public async Task<ActionResult<List<OrderResponse>>> GetOrdersFiltered([FromQuery]OrdersFilteredRequestDto request,CancellationToken cToken)
         {
