@@ -49,8 +49,10 @@ builder.Services.AddSwaggerGen(o =>
 });
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .WriteTo.Console()
-    .CreateLogger();
+    .Enrich.FromLogContext()
+    .WriteTo.Console(
+        outputTemplate:
+        "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")  .CreateLogger();
 builder.Host.UseSerilog();
 
 builder.Services.AddDatabase(configuration);
@@ -76,6 +78,7 @@ builder.Services.AddSingleton(new JsonSerializerOptions
 });
 
 var app = builder.Build();
+app.UseMiddleware<TrafficAnalyzer>();
 using (var scope = app.Services.CreateScope())
 {
     var dbInitializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
@@ -93,6 +96,7 @@ app.Use(async (context, next) =>
     await next();
 });
 app.UseMiddleware<GlobalExceptionHandler>();
+
 app.UseCors();
 app.UseHttpsRedirection();
 app.UseAuthentication();

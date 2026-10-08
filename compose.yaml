@@ -22,7 +22,11 @@
       context: .
       dockerfile: DPBack.API/Dockerfile
     container_name: DPApi
-    
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     restart: always
     depends_on:
       postgres:
