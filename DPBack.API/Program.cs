@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Reflection;
 using Serilog;
 using System.Text.Json;
@@ -7,10 +8,20 @@ using DPBack.API.Extensions;
 using DPBack.API.Middleware;
 using DPBack.Application.Abstractions;
 using DPBack.Infrastructure;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+    
+    options.KnownNetworks.Add(new IPNetwork(IPAddress.Parse("172.16.0.0"), 12));
+});
 IConfiguration configuration = builder.Configuration;
 builder.Services.AddOptions(configuration);
 builder.Services.AddCorsPolicy(configuration);
@@ -78,7 +89,16 @@ builder.Services.AddSingleton(new JsonSerializerOptions
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
+app.Use(async (context, next) =>
+{
+    //For Payment Notify request verification
+    context.Request.EnableBuffering();
+    await next();
+});
 app.UseMiddleware<TrafficAnalyzer>();
+app.UseMiddleware<GlobalExceptionHandler>();
 using (var scope = app.Services.CreateScope())
 {
     var dbInitializer = scope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
@@ -89,13 +109,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.Use(async (context, next) =>
-{
-    //For Payment Notify request verification
-    context.Request.EnableBuffering();
-    await next();
-});
-app.UseMiddleware<GlobalExceptionHandler>();
+
+
+
+
+
 
 app.UseCors();
 app.UseHttpsRedirection();

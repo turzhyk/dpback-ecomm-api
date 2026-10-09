@@ -6,10 +6,9 @@ public sealed class TrafficAnalyzer(RequestDelegate next, ILogger<TrafficAnalyze
 {
     public async Task InvokeAsync(HttpContext context)
     {
-        
         if ((context.Request.Path == "/swagger/index.js") && HttpMethods.IsGet(context.Request.Method))
         {
-            var userIp = context.Connection.RemoteIpAddress;
+            var userIp = context.Connection.RemoteIpAddress?.ToString();
             var userAgent = context.Request.Headers.UserAgent.ToString();
 
             if (!IsBot(context.Request))
