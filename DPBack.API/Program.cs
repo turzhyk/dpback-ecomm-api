@@ -59,7 +59,7 @@ builder.Services.AddSwaggerGen(o =>
     });
 });
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Information()
     .Enrich.FromLogContext()
     .WriteTo.Console(
         outputTemplate:
