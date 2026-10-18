@@ -13,18 +13,16 @@ namespace DPBack.Tests.Services;
 public class UserServiceTests
 {
     private readonly Mock<IUsersRepository> _mockRepository;
-    private readonly Mock<ITokenProvider> _mockToken;
     private readonly Mock<IPasswordHasher<User>> _mockHasher;
-    private readonly Mock<ILogger<UserService>> _mockLogger;
     private readonly IUserService _service;
 
     public UserServiceTests()
     {
         _mockHasher = new Mock<IPasswordHasher<User>>();
-        _mockToken = new Mock<ITokenProvider>();
+        Mock<ITokenProvider> mockToken = new Mock<ITokenProvider>();
         _mockRepository = new Mock<IUsersRepository>();
-        _mockLogger = new Mock<ILogger<UserService>>();
-        _service = new UserService(_mockRepository.Object, _mockHasher.Object, _mockToken.Object, _mockLogger.Object);
+        Mock<ILogger<UserService>> mockLogger = new Mock<ILogger<UserService>>();
+        _service = new UserService(_mockRepository.Object, _mockHasher.Object, mockToken.Object, mockLogger.Object);
     }
 
     [Fact]
@@ -44,7 +42,7 @@ public class UserServiceTests
     public async Task GetById_ShouldThrow_WhenUserNotFound()
     {
         var id = Guid.NewGuid();
-        _mockRepository.Setup(x => x.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
+        _mockRepository.Setup(x => x.GetByIdAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync((User?)null);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.GetByIdAsync(id, CancellationToken.None));
     }
@@ -69,7 +67,7 @@ public class UserServiceTests
 
         _mockRepository
             .Setup(r => r.GetByEmailAsync(email, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((User)null);
+            .ReturnsAsync((User?)null);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
             _service.GetByEmailAsync(email, CancellationToken.None));

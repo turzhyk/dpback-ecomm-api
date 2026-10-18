@@ -131,6 +131,8 @@ namespace DPBack.Application.Services
             decimal totalPrice = 0;
             foreach (var i in items)
             {
+                if (i.Quantity == 0)
+                    throw new ArgumentException("Item quantity must be greater than 0");
                 var unitPrice = priceCalcService.Calculate(i);
                 i.PricePerUnit = unitPrice;
                 totalPrice += unitPrice * i.Quantity;

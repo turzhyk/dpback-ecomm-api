@@ -6,6 +6,7 @@ using DPBack.Application.Mappers;
 using DPBack.Application.Services;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Enums.Products;
+using DPBack.Domain.Models;
 using DPBack.Domain.Models.Products;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -52,16 +53,32 @@ public class OrderServiceTests
         _mockPaymentService.Setup(x =>
             x.CreatePaymentAsync(It.IsAny<string>(), It.IsAny<decimal>(), CancellationToken.None)).ReturnsAsync("link");
         _mockCalculator.Setup(x =>
-            x.Calculate(It.IsAny<OrderItemRequest>())).Returns(10m);
+            x.Calculate(It.IsAny<OrderItem>())).Returns(10m);
         _mockRepository.Setup(x => x.CustomerExistsAsync(existingCustomerId, CancellationToken.None))
             .ReturnsAsync(true);
         var result = await _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None);
 
+        Assert.NotNull(result.PaymentUrl);
         Assert.NotEmpty(result.PaymentUrl);
         Assert.NotEqual(Guid.Empty, result.OrderId);
     }
 
     [Fact]
+    public async Task CreateOrder_ShouldThrow_WhenItemQuantityIsZero()
+    {
+        var existingCustomerId = new Guid("1e7f7772-9c53-4e88-afa0-d785b3db9842");
+        _mockRepository.Setup(x => x.CustomerExistsAsync(existingCustomerId, CancellationToken.None)).ReturnsAsync(true);
+        var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
+        {
+            new OrderItemRequest(0, OrderItemType.Test,
+                new JsonElement(), null)
+        }, true, existingCustomerId);
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None));
+    }
+
+[Fact]
     public async Task CreateOrder_ShouldReturn_CustomerDoesntExists()
     {
         var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
