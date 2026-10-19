@@ -69,25 +69,5 @@ public class ProductsService : IProductsService
         };
     }
 
-    private record ProductOptionScheme
-    {
-        public Type Key;
-        public string Name;
-    }
-
-    private List<ProductOptionSchemeDto> GetOptions(ProductOptionScheme[] options)
-    {
-        var result = new List<ProductOptionSchemeDto>();
-        foreach (var option in options)
-        {
-            result.Add(new ProductOptionSchemeDto
-            {
-                Name = option.Name,
-                Key = option.Key.ToString(),
-                Values = Enum.GetNames(option.Key).ToList()
-            });
-        }
-
-        return result;
-    }
+ 
 }

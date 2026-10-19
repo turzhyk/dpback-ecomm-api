@@ -1,26 +1,27 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using DPBack.Domain.Enums;
-using DPBack.Domain.Models;
 
-namespace DPBack.Infrastructure.Entities
+namespace DPBack.Infrastructure.Entities.Orders
 
 {
     public class OrderEntity
     {
         public Guid Id { get; set; }
         public int OrderNumber { get; set; }
-        public string Descriprion { get; set; }
+        [MaxLength(100)]
+        public string? Descriprion { get; set; }
         public bool IsSuspended { get; set; }
         public OrderStatus Status { get; set; }
         public decimal TotalPrice { get; set; }
-        public string AssignedTo { get; set; }
+        [MaxLength(100)]
+        public required string AssignedTo { get; set; }
         public DateTime CreatedAt { get; set; }
         public OrderPaymentStatus PaymentStatus { get; set; }
-        public string AddressSnapshot { get; set; }
+        [MaxLength(300)]
+        public string? AddressSnapshot { get; set; }
         public Guid CustomerId { get; set; }
         
-        public List<OrderItemEntity> Items { get; set; } 
+        public List<OrderItemEntity> Items { get; set; } =new (); 
 
         public List<OrderHistoryElementEntity> History { get; set; } = new();
         public uint  RowVersion { get; set; }

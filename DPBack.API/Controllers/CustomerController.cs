@@ -22,9 +22,9 @@ public class CustomerController(IOrdersService ordersService) : ControllerBase
 
     [Authorize]
     [HttpGet]
-    public async Task<ActionResult<CustomersResponseDto>> GetAll(CancellationToken cToken)
+    public Task<ActionResult<CustomersResponseDto>> GetAll(CancellationToken cToken)
     {
-        return Ok();
+        throw new NotImplementedException();
     }
 
     [Authorize]
@@ -62,7 +62,7 @@ public class CustomerController(IOrdersService ordersService) : ControllerBase
     [Authorize]
     public async Task<ActionResult> DeleteCustomerAddress(Guid addressId, CancellationToken cToken)
     {
-        // Implement later
+        await ordersService.DeleteCustomerAddress(addressId, cToken);
         return Ok();
     }
 }

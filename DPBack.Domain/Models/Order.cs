@@ -9,7 +9,7 @@ namespace DPBack.Domain.Models
     {
         public Order(Guid id,
             int orderNumber,
-            string description,
+            string? description,
             decimal price,
             Guid customerId,
             List<OrderItem> items,
@@ -36,7 +36,7 @@ namespace DPBack.Domain.Models
 
         public Guid Id { get; }
         public int OrderNumber { get; }
-        public string Description { get; }
+        public string? Description { get; }
 
         public decimal TotalPrice { get; }
         public Guid CustomerId { get; }
@@ -52,7 +52,7 @@ namespace DPBack.Domain.Models
         public List<OrderHistoryElement> History { get; set; }
             = new();
 
-        public static (Order Order, string Error) Create(Guid id, int number, string description, decimal price,
+        public static Order Create(Guid id, int number, string? description, decimal price,
             Guid customerId,
             List<OrderItem> items, Guid assignedTo,
             DateTime createdAt, bool suspended, OrderStatus status, OrderPaymentStatus paymentStatus,
@@ -62,7 +62,7 @@ namespace DPBack.Domain.Models
             var order = new Order(id, number, description, price, customerId, items, assignedTo, createdAt, suspended,
                 status,
                 paymentStatus, history);
-            return (order, error);
+            return order;
         }
     }
 }

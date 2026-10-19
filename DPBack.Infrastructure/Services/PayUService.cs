@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using DPBack.Application.Contracts;
 using DPBack.Application.Abstractions;
+using DPBack.Application.Contracts.Payment.PayU;
 using DPBack.Application.Options;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;

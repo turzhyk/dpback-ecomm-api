@@ -1,12 +1,11 @@
-﻿using DPBack.Application.Abstractions;
-using DPBack.Domain.Models;
-using DPBack.Infrastructure.Contexts;
+﻿using DPBack.Infrastructure.Contexts;
+using DPBack.Infrastructure.Entities.Products;
 
 namespace DPBack.Infrastructure.Seeder;
 
 public static class DeliveryOptionSeeder
 {
-    public static async Task SeedAsync(OrderStoreDbContext context)
+    public static void SeedAsync(OrderStoreDbContext context)
     {
         if (context.DeliveryOptions.Any(x => x.Title == "Paczkomat InPost"))
         {

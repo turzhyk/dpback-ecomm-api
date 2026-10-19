@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using DPBack.Application.Contracts;
 using DPBack.Application.Abstractions;
+using DPBack.Application.Contracts.Order.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -90,10 +91,9 @@ namespace DPBack.API.Controllers
         }
 
         [HttpGet("{id}/payment")]
-        public async Task<string?> GetPaymentLink(Guid id, CancellationToken cToken)
+        public Task<string?> GetPaymentLink(Guid id, CancellationToken cToken)
         {
-            throw new NotImplementedException()
-                ;
+            throw new NotImplementedException();
         }
     }
 }

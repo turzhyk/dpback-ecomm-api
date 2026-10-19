@@ -2,6 +2,7 @@ using DPBack.Application.Abstractions;
 using DPBack.Domain.Models;
 using DPBack.Infrastructure.Contexts;
 using DPBack.Infrastructure.Entities;
+using DPBack.Infrastructure.Entities.Accounts;
 using DPBack.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 

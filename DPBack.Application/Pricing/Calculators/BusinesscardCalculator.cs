@@ -1,5 +1,3 @@
-using System.Reflection.PortableExecutable;
-using System.Text.Json;
 using DPBack.Application.Abstractions;
 using DPBack.Application.Options.Pricing;
 using DPBack.Domain.Enums;
@@ -19,7 +17,7 @@ public class BusinesscardCalculator : IPriceCalculator
         _pricing = pricing.Value.Businesscard;
     }
 
-    public decimal CalculateUnitPrice(ProductConfig abstractConfig)
+    public decimal CalculateUnitPrice(ProductConfig? abstractConfig)
     {
         if (abstractConfig == null)
             throw new Exception("Invalid configurations");

@@ -46,9 +46,9 @@ public class QuestPdfReceiptGenerator:IReceiptGenerator
                                     .Background(rowCount % 2 == 0 ? "#F2F2F2" : "#FFFFFF").Padding(3, Unit.Millimetre)
                                     .Row(row =>
                                 {
-                                    row.ConstantItem(300).Text(i.Type).Bold();
+                                    row.ConstantItem(300).Text(i.Type.ToString()).Bold();
                                    
-                                    row.RelativeItem().BorderRight(0.5f, Unit.Millimetre).Text(i.Quantity);
+                                    row.RelativeItem().BorderRight(0.5f, Unit.Millimetre).Text(i.Quantity.ToString());
                                     row.RelativeItem().Text($"x{i.PricePerUnit}={i.Quantity * i.PricePerUnit} zł");
                                 });
                                 rowCount++;

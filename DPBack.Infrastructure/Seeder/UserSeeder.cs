@@ -2,6 +2,7 @@ using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using DPBack.Infrastructure.Contexts;
 using DPBack.Infrastructure.Entities;
+using DPBack.Infrastructure.Entities.Accounts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 

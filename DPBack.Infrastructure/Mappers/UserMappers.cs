@@ -1,5 +1,7 @@
 ﻿using DPBack.Domain.Models;
 using DPBack.Infrastructure.Entities;
+using DPBack.Infrastructure.Entities.Accounts;
+using DPBack.Infrastructure.Entities.Orders;
 
 namespace DPBack.Infrastructure.Mappers;
 

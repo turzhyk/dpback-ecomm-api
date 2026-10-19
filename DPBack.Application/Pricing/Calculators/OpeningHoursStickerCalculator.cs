@@ -1,4 +1,3 @@
-using System.Text.Json;
 using DPBack.Application.Abstractions;
 using DPBack.Application.Options.Pricing;
 using DPBack.Domain.Enums;
@@ -14,7 +13,7 @@ public class OpeningHoursStickerCalculator(IOptions<OpeningHoursStickerPricing> 
 
     public OrderItemType Type => OrderItemType.OpeningHoursSticker;
 
-    public decimal CalculateUnitPrice(ProductConfig abstractConfig)
+    public decimal CalculateUnitPrice(ProductConfig? abstractConfig)
     {
         if (abstractConfig == null)
             throw new Exception("Invalid businesscard configurations");

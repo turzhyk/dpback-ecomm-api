@@ -1,5 +1,6 @@
 using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts;
+using DPBack.Application.Contracts.User.Request;
 using DPBack.Application.Contracts.User.Response;
 using DPBack.Application.Exceptions;
 using DPBack.Application.Mappers.User;

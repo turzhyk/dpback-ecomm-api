@@ -1,10 +1,8 @@
-using System.Text.Json.Serialization;
-
-namespace DPBack.Application.Contracts;
+namespace DPBack.Application.Contracts.User.Request;
 
 
 public class UserLoginRequest
 {
-    public string Login { get; set; }
-    public string Password { get; set; }
+    public required string Login { get; set; }
+    public required string Password { get; set; }
 }

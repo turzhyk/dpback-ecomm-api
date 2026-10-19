@@ -7,8 +7,8 @@ namespace DPBack.API.Controllers;
 [Route("/api/price")]
 public class PriceController(IPriceCalcService priceCalcService) : ControllerBase
 {
-    [HttpPost]
-    public async Task<ActionResult<decimal>> GetPricePerUnit([FromBody] OrderItemRequest request)
+    [HttpGet]
+    public ActionResult<decimal> GetPricePerUnit([FromQuery] OrderItemRequest request)
     {
         return priceCalcService.Calculate(request);
     }

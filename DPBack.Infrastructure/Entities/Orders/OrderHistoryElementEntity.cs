@@ -1,6 +1,7 @@
 ﻿using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using DPBack.Infrastructure.Entities;
+using DPBack.Infrastructure.Entities.Orders;
 
 namespace DPBack.Infrastructure.Entities;
 

@@ -1,11 +1,10 @@
 ﻿using System.Text.Json;
 using DPBack.Application.Abstractions;
-using DPBack.Application.Mappers;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
-using DPBack.Domain.Models.Products;
 using DPBack.Infrastructure.Contexts;
 using DPBack.Infrastructure.Entities;
+using DPBack.Infrastructure.Entities.Orders;
 using DPBack.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,7 +46,7 @@ namespace DPBack.Infrastructure.Repositories
                 e.Status,
                 e.PaymentStatus,
                 history
-            ).Order;
+            );
 
 
             return order;
@@ -387,7 +386,11 @@ namespace DPBack.Infrastructure.Repositories
             entity.Options = address.Options;
             await context.SaveChangesAsync(cToken);
         }
-
+            public async Task DeleteCustomerAddress(Guid addressId, CancellationToken cToken)
+            {
+                await context.CustomerAddresses.Where(x => x.Id == addressId).ExecuteDeleteAsync(cToken);
+                await context.SaveChangesAsync(cToken);
+            }
         public async Task SaveChangesAsync(CancellationToken cToken) => await context.SaveChangesAsync(cToken);
 
         public async Task<PaymentObject?> GetPaymentByOrderAsync(Guid orderId, CancellationToken cToken)
@@ -410,7 +413,7 @@ namespace DPBack.Infrastructure.Repositories
             await context.Payments.AddAsync(payment, cToken);
 
 
-        public async Task UpdateAsync(PaymentObject payment, CancellationToken cToken)
+        public Task UpdateAsync(PaymentObject payment, CancellationToken cToken)
         {
             throw new NotImplementedException();
         }

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using DPBack.Application.Contracts;
+using DPBack.Application.Contracts.Order.Response;
 using DPBack.Domain.Models;
 
 namespace DPBack.Application.Extensions;

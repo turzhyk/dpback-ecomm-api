@@ -1,14 +1,15 @@
 using System.ComponentModel.DataAnnotations;
-namespace DPBack.Application.Contracts;
+
+namespace DPBack.Application.Contracts.User.Request;
 
 public class UserCreateRequest
 {
     [Required]
     [EmailAddress]
-    public string Email { get; set; }
+    public required string Email { get; set; }
     [Required ]
-    public string Password { get; set; }
-    public string Name { get; set; }
+    public required string Password { get; set; }
+    public string? Name { get; set; }
     [Phone]
-    public string Phone { get; set; }
+    public string? Phone { get; set; }
 }

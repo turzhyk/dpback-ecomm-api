@@ -1,5 +1,7 @@
 ﻿using DPBack.Domain.Models;
 using DPBack.Infrastructure.Entities;
+using DPBack.Infrastructure.Entities.Orders;
+using DPBack.Infrastructure.Entities.Products;
 using Microsoft.EntityFrameworkCore;
 
 

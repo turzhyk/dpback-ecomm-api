@@ -2,6 +2,7 @@
 
 using DPBack.Application.Contracts;
 using DPBack.Application.Contracts.Customers;
+using DPBack.Application.Contracts.Order.Response;
 using DPBack.Application.Contracts.User.Response;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
@@ -19,7 +20,7 @@ namespace DPBack.Application.Abstractions
 
         Task ChangeStatusAsync(Guid orderId, string author, OrderStatus newStatus, CancellationToken cToken);
 
-        Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList();
+        IEnumerable<DeliveryOptionResponseDto> GetDeliveryOptionList();
 
         Task<CustomerResponseDto> CreateCustomerAsync(CustomerCreateRequest request, CancellationToken cToken);
         Task<CustomersResponseDto> GetAllCustomersAsync(CancellationToken cToken);
@@ -29,6 +30,7 @@ namespace DPBack.Application.Abstractions
         Task<List<CustomerAddressResponse>> GetAddressesByCustomerIdAsync(Guid id, CancellationToken cToken);
         Task<Guid> AddCustomerAddressAsync(Guid userId, CustomerAddressCreateRequest request, CancellationToken cToken);
         Task ModifyCustomerAddressAsync(Guid addressId, CustomerAddressModifyRequest request, CancellationToken cToken);
+        Task DeleteCustomerAddress(Guid addressId, CancellationToken cToken);
         Task<string?> GetPaymentLinkAsync(Guid orderId, CancellationToken cToken);
     }
 }

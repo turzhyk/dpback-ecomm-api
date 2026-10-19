@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using DPBack.Application.Contracts;
 using DPBack.Application.Abstractions;
-
+using DPBack.Application.Contracts.User.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -56,8 +56,8 @@ public class UsersController(IUserService service) : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<UserResponse>> GetUserById(Guid id, CancellationToken cToken)
     {
-        var userDto = service.GetByIdAsync(id, cToken);
-        return Ok();
+        var userDto = await service.GetByIdAsync(id, cToken);
+        return Ok(userDto);
     }
 
     

@@ -1,6 +1,7 @@
 ﻿using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts;
 using DPBack.Application.Contracts.Customers;
+using DPBack.Application.Contracts.Order.Response;
 using DPBack.Application.Contracts.User.Response;
 using DPBack.Application.Exceptions;
 using DPBack.Application.Extensions;
@@ -281,19 +282,20 @@ namespace DPBack.Application.Services
         public async Task<CustomerResponseDto?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
         {
             var result = await ordersRepo.GetCustomerByPhoneAsync(phone, cToken);
-            var add = result.Addresses;
             if (result is null)
                 return null;
+            var addresses = result.Addresses;
+            // MAP THE ADDRESS!!!
             return new CustomerResponseDto(result.Id, result.Name, result.Phone, result.Email, null);
         }
 
-        public async Task<IEnumerable<DeliveryOptionResposeDto>> GetDeliveryOptionList()
+        public IEnumerable<DeliveryOptionResponseDto> GetDeliveryOptionList()
         {
             //TEMP
             return
             [
-                new DeliveryOptionResposeDto { Id = Guid.NewGuid(), Price = 10.99m, Title = "Paczkomat Inpost" },
-                new DeliveryOptionResposeDto { Id = Guid.NewGuid(), Price = 15.99m, Title = "Kurier Inpost" }
+                new DeliveryOptionResponseDto { Id = Guid.NewGuid(), Price = 10.99m, Title = "Paczkomat Inpost" },
+                new DeliveryOptionResponseDto { Id = Guid.NewGuid(), Price = 15.99m, Title = "Kurier Inpost" }
             ];
         }
 
@@ -332,6 +334,11 @@ namespace DPBack.Application.Services
                 request.Options);
             await ordersRepo.AddCustomerAddressAsync(userAddress, cToken);
             return guid;
+        }
+
+        public async Task DeleteCustomerAddress(Guid addressId, CancellationToken cToken)
+        {
+            await ordersRepo.DeleteCustomerAddress( addressId, cToken);
         }
 
         public async Task ModifyCustomerAddressAsync(Guid addressId, CustomerAddressModifyRequest request,

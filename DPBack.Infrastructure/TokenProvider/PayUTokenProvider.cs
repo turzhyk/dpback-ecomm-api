@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts;
+using DPBack.Application.Contracts.Payment.PayU;
 using DPBack.Application.Options;
 using Microsoft.Extensions.Options;
 

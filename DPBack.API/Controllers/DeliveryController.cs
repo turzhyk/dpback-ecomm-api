@@ -9,9 +9,9 @@ namespace DPBack.API.Controllers;
 public class DeliveryController(IOrdersService ordersService) : ControllerBase
 {
     [HttpGet("list")]
-    public async Task<ActionResult<List<DeliveryOptionResposeDto>>> GetList()
+    public ActionResult<List<DeliveryOptionResponseDto>> GetList()
     {
-        var result = await ordersService.GetDeliveryOptionList();
+        var result = ordersService.GetDeliveryOptionList();
         return Ok(result);
     }
     

@@ -18,8 +18,10 @@ public class Customer
     }
 
     public override bool Equals(object? obj)
-     {
-        return Equals(obj as Customer);
+    {
+        if (obj is not Customer customer)
+            return false;
+        return Equals(customer);
     }
 
     public override int GetHashCode()
