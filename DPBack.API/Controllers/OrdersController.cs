@@ -85,9 +85,9 @@ namespace DPBack.API.Controllers
         [HttpGet("{id}/receipt")]
         public async Task<IActionResult> GetReceipt([FromRoute]Guid id, CancellationToken cToken)
         {
-            var result =await receiptService.GetReceiptFileAsync(id, cToken);
+            var result = await receiptService.GetReceiptFileAsync(id, cToken);
             var fileName = $"receipt_for_{id}.pdf";
-            return File(result, "application/pdf", fileName);
+            return File(result.pdf, "application/pdf", fileName);
         }
 
         [HttpGet("{id}/payment")]

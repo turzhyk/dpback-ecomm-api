@@ -13,7 +13,7 @@ namespace DPBack.Infrastructure.Migrations.UserStoreDb
 {
     [DbContext(typeof(UserStoreDbContext))]
     [Migration("20260504105101_nitialreate")]
-    partial class nitialreate
+    partial class Initialreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

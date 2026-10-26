@@ -7,6 +7,7 @@ public static class BackgroundServicesExtensions
     public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
     {
         services.AddHostedService<RefreshTokenBackgroundService>();
+        services.AddHostedService<OrderReceiptBackgroundService>();
         return services;
     }
 }
