@@ -42,19 +42,15 @@ public class OrderReceiptBackgroundService(
         using var scope = serviceScopeFactory.CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IOrdersRepository>();
         var receiptService = scope.ServiceProvider.GetRequiredService<IReceiptService>();
-        logger.LogInformation("Generating PDF for {OrderId}", id);
         try
         {
             var task = await repo.GetOrderReceiptTaskAsync(id, cToken);
             if (task is null)
                 throw new KeyNotFoundException("Receipt task not found");
             var orderId = task.OrderId;
-            logger.LogInformation("order id is {Id}", orderId);
             var (resultPdf, fileName, targetEmail) = await receiptService.GetReceiptFileAsync(orderId, cToken);
             var sender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
-            logger.LogInformation("PDF generated ({Size} bytes), sending to {Email}", resultPdf.Length, targetEmail);
             await sender.SendReceiptEmailAsync(targetEmail, resultPdf, fileName, _smtpOptions, cToken);
-            logger.LogInformation("Email sent for {OrderId}", id);
             await repo.ChangeOrderReceiptStatusAsync(id, OrderReceiptStatus.Done, cToken);
             logger.LogInformation($"Finished receipt for {id}");
         }
