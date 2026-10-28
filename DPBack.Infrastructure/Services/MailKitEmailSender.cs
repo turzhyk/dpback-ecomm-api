@@ -11,6 +11,8 @@ public class MailKitEmailSender : IEmailSender
     public async Task SendReceiptEmailAsync(string targetEmail, byte[] receiptPdf, string filename, SmtpOptions options,
         CancellationToken cToken)
     {
+        if(options.Login == null || options.SmtpKey == null)
+            throw new ApplicationException("Missing smtp login or smtp key. Check your configuration");
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(options.SenderName, options.SenderEmail));
         message.To.Add(MailboxAddress.Parse("yasosbib@yahoo.com"));
