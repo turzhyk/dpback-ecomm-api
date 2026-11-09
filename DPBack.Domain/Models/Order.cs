@@ -18,7 +18,8 @@ namespace DPBack.Domain.Models
             bool isSuspended,
             OrderStatus status,
             OrderPaymentStatus paymentStatus,
-            List<OrderHistoryElement> history)
+            List<OrderHistoryElement> history,
+            Guid draftId)
         {
             Id = id;
             OrderNumber = orderNumber;
@@ -32,6 +33,7 @@ namespace DPBack.Domain.Models
             Status = status;
             PaymentStatus = paymentStatus;
             History = history;
+            DraftId = draftId;
         }
 
         public Guid Id { get; }
@@ -41,6 +43,7 @@ namespace DPBack.Domain.Models
         public decimal TotalPrice { get; }
         public Guid CustomerId { get; }
         public Guid AssignedTo { get; }
+        public Guid DraftId { get; set; }
 
         public bool IsSuspended { get; }
         public OrderStatus Status { get; }
@@ -56,12 +59,12 @@ namespace DPBack.Domain.Models
             Guid customerId,
             List<OrderItem> items, Guid assignedTo,
             DateTime createdAt, bool suspended, OrderStatus status, OrderPaymentStatus paymentStatus,
-            List<OrderHistoryElement> history)
+            List<OrderHistoryElement> history, Guid draftId)
         {
             var error = string.Empty;
             var order = new Order(id, number, description, price, customerId, items, assignedTo, createdAt, suspended,
                 status,
-                paymentStatus, history);
+                paymentStatus, history, draftId);
             return order;
         }
     }

@@ -18,6 +18,7 @@ namespace DPBack.Infrastructure.Contexts
         public DbSet<CustomerAddressEntity> CustomerAddresses { get; set; }
         public DbSet<OrderReceiptTaskEntity> OrderReceiptTasks { get; set; }
         public DbSet<PaymentObject> Payments { get; set; }
+        public DbSet<OrderDraft> OrderDrafts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,6 +31,7 @@ namespace DPBack.Infrastructure.Contexts
                 .Entity<OrderEntity>()
                 .Property(o => o.OrderNumber)
                 .HasDefaultValueSql("nextval('\"OrderNumbers\"')");
+            modelBuilder.Entity<OrderEntity>().HasIndex(x => x.DraftId).IsUnique();
             modelBuilder
                 .Entity<OrderEntity>()
                 .Property(p => p.RowVersion)
@@ -99,6 +101,15 @@ namespace DPBack.Infrastructure.Contexts
                 //     .HasOne(x => x.Customer)
                 //     .WithMany()
                 //     .HasForeignKey(x => x.CustomerId);
+            });
+            modelBuilder.Entity<OrderDraft>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x =>
+                    new
+                    {
+                        x.CustomerId, x.IdempotencyKey
+                    }).IsUnique();
             });
         }
     }

@@ -2,6 +2,7 @@
 using DPBack.Application.Contracts;
 using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts.Order.Response;
+using DPBack.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,18 @@ namespace DPBack.API.Controllers
             if (userId == null)
                 return null;
             return Guid.Parse(userId);
+        }
+
+        private UserRole? GetCurrentUserRole()
+        {
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (Enum.TryParse<UserRole>(role, ignoreCase: true, out var userRole))
+            {
+                return userRole;
+            }
+
+            return null;
+
         }
         
         [HttpGet]
@@ -55,13 +68,21 @@ namespace DPBack.API.Controllers
             await service.ChangeStatusAsync(id, userId.ToString()!, request.Status, cToken);
             return Ok();
         }
-      
+
+        [HttpPost("/drafts")]
+        public async Task<ActionResult> CreateOrderDraft([FromBody] Guid id)
+        {
+            throw new NotImplementedException();
+        }
         [HttpPost]
         public async Task<ActionResult<CreateOrderResponse>> CreateOrder([FromBody] CreateOrderRequest request, CancellationToken cToken)
         {
             var userId = GetCurrentUserId();
-            // var userId = GetCurrentUserId();
-            var response = await service.CreateAsync(userId, request, cToken);
+            var role = GetCurrentUserRole();
+            if (userId is null || role is null)
+                return Unauthorized();
+          
+            var response = await service.CreateAsync(userId.GetValueOrDefault(), role.GetValueOrDefault(), request, cToken);
             return Ok(response);
         }
 

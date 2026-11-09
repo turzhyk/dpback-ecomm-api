@@ -6,6 +6,8 @@ namespace DPBack.Application.Abstractions
     public interface IOrdersRepository
     {
         Task<Guid> Create(Order order, CancellationToken cToken);
+        Task<OrderDraftCreateResult> CreateDraftAsync(OrderDraft draft, CancellationToken cToken);
+        Task<OrderDraft?> GetDraftByIdempotencyAsync(Guid key, CancellationToken cToken);
         Task<Guid> Delete(Guid id, CancellationToken cToken);
         Task<List<Order>> GetAll(CancellationToken cToken, int skip, int take, List<OrderStatus>? correctStatuses = null);
         Task<int> Count(CancellationToken cToken);
@@ -24,6 +26,8 @@ namespace DPBack.Application.Abstractions
         Task<Guid> CreateCustomerAsync(Customer customer, CancellationToken cToken);
         Task<List<Customer>> GetAllCustomersAsync(CancellationToken cancellationToken);
         Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken);
+        Task<Customer?> GetCustomerAsync(Guid id, CancellationToken cToken);
+        Task<Customer?> GetCustomerByUserIdAsync(Guid userId, CancellationToken cToken);
         Task<bool> CustomerByPhoneExistsAsync(string phone, CancellationToken cToken);
         Task<bool> CustomerExistsAsync(Guid id, CancellationToken cToken);
         Task SuspendOrderAsync(Guid id, CancellationToken cToken);

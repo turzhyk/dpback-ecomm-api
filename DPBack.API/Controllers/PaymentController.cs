@@ -52,7 +52,7 @@ public class PaymentController(
         {
             case ("WAITING_FOR_CONFIRMATION"):
                 if (currentStatus == OrderPaymentStatus.Waiting)
-                    await paymentService.CapturePayment(payuOrderId);
+                    await paymentService.CapturePayment(payuOrderId, cToken);
                 break;
             case "CANCELED":
                 await ordersService.SetPaymentStatusAsync(new Guid(orderId), OrderPaymentStatus.Cancelled, cToken);

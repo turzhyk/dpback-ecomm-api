@@ -14,7 +14,7 @@ public class PayUTokenProvider(IOptions<PayUOptions> options) : IPaymentTokenPro
     private DateTime _expires;
     private readonly PayUOptions _options = options.Value;
 
-    public async Task<string?> GetToken()
+    public async Task<string?> GetToken(CancellationToken cToken)
     {
         if (_token != null && DateTime.UtcNow < _expires)
             return _token;
@@ -32,9 +32,9 @@ public class PayUTokenProvider(IOptions<PayUOptions> options) : IPaymentTokenPro
 
         var response = await client.PostAsync(
             "https://secure.snd.payu.com/pl/standard/user/oauth/authorize",
-            content);
+            content, cToken);
 
-        var json = await response.Content.ReadFromJsonAsync<PayUTokenReponseDto>();
+        var json = await response.Content.ReadFromJsonAsync<PayUTokenReponseDto>(cToken);
         if (json == null)
             return null;
         Console.WriteLine(json.AccessToken);

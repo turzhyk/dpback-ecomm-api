@@ -25,5 +25,6 @@ namespace DPBack.Infrastructure.Entities.Orders
 
         public List<OrderHistoryElementEntity> History { get; set; } = new();
         public uint  RowVersion { get; set; }
+        public Guid DraftId { get; set; }
     }
 }

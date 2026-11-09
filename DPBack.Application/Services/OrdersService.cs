@@ -93,6 +93,29 @@ namespace DPBack.Application.Services
                     FetchAndCatchAllFilteredOrdersAsync(request, cToken));
         }
 
+        public async Task<Guid> CreateDraftAsync(Guid userId, UserRole userRole, CreateOrderDraftRequest request,
+            CancellationToken cToken)
+        {
+            var customerId = Guid.Empty;
+            if (userRole == UserRole.User)
+            {
+                var customer = await ordersRepo.GetCustomerByUserIdAsync(userId, cToken);
+                if (customer is null)
+                    throw new CustomerDoesNotExistException();
+                customerId = customer.Id;
+            }
+            else
+            {
+                customerId = request.CustomerId;
+            }
+
+            var id = Guid.NewGuid();
+            var draft = new OrderDraft
+                { Id = id, CustomerId = customerId, IdempotencyKey = request.IdempotencyKey };
+            var result = await ordersRepo.CreateDraftAsync(draft, cToken);
+            return id;
+        }
+
         public async Task<OrderResponse> GetByIdAsync(Guid userId, Guid orderId, CancellationToken cToken)
         {
             logger.LogInformation(
@@ -106,22 +129,20 @@ namespace DPBack.Application.Services
             return order.ToDto();
         }
 
-        public async Task<CreateOrderResponse> CreateAsync(Guid? userId, CreateOrderRequest request,
+        public async Task<CreateOrderResponse> CreateAsync(Guid userId, UserRole userRole, CreateOrderRequest request,
             CancellationToken cToken)
         {
             cToken.ThrowIfCancellationRequested();
+            var draft = await ordersRepo.GetDraftByIdempotencyAsync(request.IdempotencyKey, cToken);
+            if (draft is null)
+                throw new AggregateException("Cannot create an order without draft");
             logger.LogInformation("Creating new order for user {userId}", userId);
-            var authorId = userId ?? Guid.NewGuid();
-            var customerId = request.CustomerId ?? Guid.NewGuid();
-            if (request.CustomerId is null)
-                throw new CustomerDoesNotExistException("customer does not exist");
-            if (request.CustomerId is Guid _customerId)
-            {
-                var customerExists = await ordersRepo.CustomerExistsAsync(_customerId, cToken);
-                if (!customerExists)
-                    throw new CustomerDoesNotExistException($"customer {_customerId} does not exist");
-            }
 
+            var customer = userRole == UserRole.User
+                ? await ordersRepo.GetCustomerByUserIdAsync(userId, cToken)
+                : await ordersRepo.GetCustomerByUserIdAsync(request.CustomerId, cToken);
+            if (customer is null)
+                    throw new CustomerDoesNotExistException($"customer does not exist");
             var items = request.Items.Select(i => new OrderItem
             {
                 Id = Guid.NewGuid(),
@@ -129,6 +150,7 @@ namespace DPBack.Application.Services
                 Type = i.Type,
                 Options = optionsMapper.Map(i.Type, i.Options),
             }).ToList();
+            
             decimal totalPrice = 0;
             foreach (var i in items)
             {
@@ -141,32 +163,46 @@ namespace DPBack.Application.Services
 
             if (totalPrice == 0)
                 throw new InvalidOperationException("PRICE IS 0, CHECK CALCULATORS");
+            
             var paymentStatus = request.Paid ? OrderPaymentStatus.Paid : OrderPaymentStatus.Waiting;
             var orderId = Guid.NewGuid();
-            var initHistoryElement = new OrderHistoryElement
+            var history = new List<OrderHistoryElement>
             {
-                OrderId = orderId,
-                Status = OrderStatus.New,
-                ChangedAt = DateTime.UtcNow,
-                AuthorLogin = userId?.ToString() ?? "-",
-                Id = Guid.NewGuid()
+                new OrderHistoryElement
+                {
+                    OrderId = orderId,
+                    Status = OrderStatus.New,
+                    ChangedAt = DateTime.UtcNow,
+                    AuthorLogin = userId.ToString(),
+                    Id = Guid.NewGuid()
+                }
             };
-            var history = new List<OrderHistoryElement> { initHistoryElement };
+         
             var order = new Order(
                 orderId,
                 0,
                 request.Desc,
                 totalPrice,
-                customerId,
+                customer.Id,
                 items,
-                authorId,
+                userId,
                 DateTime.UtcNow,
                 false,
                 status: OrderStatus.New,
                 paymentStatus: paymentStatus,
-                history
+                history,
+                draft.Id
             );
-            await ordersRepo.Create(order, cToken);
+
+            try
+            {
+                await ordersRepo.Create(order, cToken);
+            }
+            catch (OrderAlreadyExistsException e)
+            {
+                return new CreateOrderResponse(order.Id);
+            }
+            
             cache.Remove(OrdersCacheKey);
             logger.LogInformation("Order {orderId} created", orderId);
             if (paymentStatus == OrderPaymentStatus.Paid)
@@ -206,7 +242,7 @@ namespace DPBack.Application.Services
                     ChangedAt = DateTime.UtcNow
                 };
                 await ordersRepo.ChangeStatus(orderId, author, newStatus, history, cToken);
-                
+
                 cache.Remove(OrdersCacheKey);
             }
             else
@@ -338,7 +374,7 @@ namespace DPBack.Application.Services
 
         public async Task DeleteCustomerAddress(Guid addressId, CancellationToken cToken)
         {
-            await ordersRepo.DeleteCustomerAddress( addressId, cToken);
+            await ordersRepo.DeleteCustomerAddress(addressId, cToken);
         }
 
         public async Task ModifyCustomerAddressAsync(Guid addressId, CustomerAddressModifyRequest request,

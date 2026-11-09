@@ -26,13 +26,10 @@ public class PayUService(
 
     public async Task<string> CreatePaymentAsync(string orderId, decimal totalPrice, CancellationToken cToken)
     {
-        var token = await tokenProvider.GetToken();
+        var token = await tokenProvider.GetToken(cToken);
         if (token == null)
             throw new Exception("payu token is null");
-        var handler = new HttpClientHandler
-        {
-            AllowAutoRedirect = false 
-        };
+     
 
         var client = clientFactory.CreateClient("PayU");
         client.DefaultRequestHeaders.Authorization =
@@ -55,8 +52,7 @@ public class PayUService(
             }
         };
         Console.WriteLine(payuOrder);
-        Console.WriteLine($"Token : {token}");
-        var response = await client.PostAsJsonAsync("/api/v2_1/orders", payuOrder);
+        var response = await client.PostAsJsonAsync("/api/v2_1/orders", payuOrder, cToken);
 
         var content = await response.Content.ReadAsStringAsync();
         Console.WriteLine($"RAW RESPONSE: {content}");
@@ -77,21 +73,13 @@ public class PayUService(
         return result.RedirectUri;
     }
 
-    public async Task CapturePayment(string orderId)
+    public async Task CapturePayment(string orderId, CancellationToken cToken)
     {
-        var token = await tokenProvider.GetToken();
-        var handler = new HttpClientHandler
-        {
-            AllowAutoRedirect = false 
-        };
-
-        var client = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://secure.snd.payu.com")
-        };
+        var token = await tokenProvider.GetToken(cToken);
+        var client = clientFactory.CreateClient("PayU");
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await client.PostAsync($"/api/v2_1/orders/{orderId}/captures",null);
+        using var response = await client.PostAsync($"/api/v2_1/orders/{orderId}/captures",null, cToken);
         
     }
 }

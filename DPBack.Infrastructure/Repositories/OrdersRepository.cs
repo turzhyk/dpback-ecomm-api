@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using DPBack.Application.Abstractions;
+using DPBack.Application.Exceptions;
 using DPBack.Domain.Enums;
 using DPBack.Domain.Models;
 using DPBack.Infrastructure.Contexts;
@@ -7,6 +8,7 @@ using DPBack.Infrastructure.Entities;
 using DPBack.Infrastructure.Entities.Orders;
 using DPBack.Infrastructure.Mappers;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace DPBack.Infrastructure.Repositories
 {
@@ -45,7 +47,8 @@ namespace DPBack.Infrastructure.Repositories
                 e.IsSuspended,
                 e.Status,
                 e.PaymentStatus,
-                history
+                history,
+                e.DraftId
             );
 
 
@@ -92,6 +95,28 @@ namespace DPBack.Infrastructure.Repositories
             return orderEntities.Select(x => MapToOrder(x, mapper)).ToList();
         }
 
+        public async Task<OrderDraftCreateResult> CreateDraftAsync(OrderDraft draft, CancellationToken cToken)
+        {
+            context.OrderDrafts.Add(draft);
+            try
+            {
+                await context.SaveChangesAsync(cToken);
+            }
+            catch (DbUpdateException e) when (e.InnerException is PostgresException pgE &&
+                                              pgE.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                return OrderDraftCreateResult.Success;
+            }
+
+            return OrderDraftCreateResult.Success;
+        }
+
+        public async Task<OrderDraft?> GetDraftByIdempotencyAsync(Guid key, CancellationToken cToken)
+        {
+            var draft = await context.OrderDrafts.FirstOrDefaultAsync(x => x.IdempotencyKey == key,cToken);
+            return draft;
+        }
+
         public async Task<Guid> Create(Order order, CancellationToken cToken)
         {
             await using var transaction = await context.Database.BeginTransactionAsync(cToken);
@@ -121,12 +146,19 @@ namespace DPBack.Infrastructure.Repositories
                     CreatedAt = order.CreatedAt,
                     PaymentStatus = order.PaymentStatus,
                     AddressSnapshot = "",
-                    Status = order.Status
+                    Status = order.Status,
+                    DraftId = order.DraftId
                 };
                 await context.Orders.AddAsync(orderEntity, cToken);
                 await context.SaveChangesAsync(cToken);
                 await transaction.CommitAsync(cToken);
                 return order.Id;
+            }
+            catch (DbUpdateException e) when (e.InnerException is PostgresException pgE &&
+                                              pgE.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                await transaction.RollbackAsync(cToken);
+                throw new OrderAlreadyExistsException();
             }
             catch
             {
@@ -261,6 +293,24 @@ namespace DPBack.Infrastructure.Repositories
             }
         }
 
+        public async Task<Customer?> GetCustomerByUserIdAsync(Guid userId, CancellationToken cToken)
+        {
+            var entity = await context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == userId, cToken);
+            if (entity is null)
+                return null;
+            var customer = entity.ToModel();
+            return customer;
+        }
+
+        public async Task<Customer?> GetCustomerAsync(Guid id, CancellationToken cToken)
+        {
+            var entity = await context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cToken);
+            if (entity is null)
+                return null;
+            var customer = entity.ToModel();
+            return customer;
+        }
+
         public async Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
         {
             var entity = await context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Phone == phone, cToken);
@@ -386,11 +436,13 @@ namespace DPBack.Infrastructure.Repositories
             entity.Options = address.Options;
             await context.SaveChangesAsync(cToken);
         }
-            public async Task DeleteCustomerAddress(Guid addressId, CancellationToken cToken)
-            {
-                await context.CustomerAddresses.Where(x => x.Id == addressId).ExecuteDeleteAsync(cToken);
-                await context.SaveChangesAsync(cToken);
-            }
+
+        public async Task DeleteCustomerAddress(Guid addressId, CancellationToken cToken)
+        {
+            await context.CustomerAddresses.Where(x => x.Id == addressId).ExecuteDeleteAsync(cToken);
+            await context.SaveChangesAsync(cToken);
+        }
+
         public async Task SaveChangesAsync(CancellationToken cToken) => await context.SaveChangesAsync(cToken);
 
         public async Task<PaymentObject?> GetPaymentByOrderAsync(Guid orderId, CancellationToken cToken)

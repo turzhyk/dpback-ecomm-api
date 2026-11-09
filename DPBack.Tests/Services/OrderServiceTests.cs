@@ -44,19 +44,23 @@ public class OrderServiceTests
     public async Task CreateOrder_ShouldReturnResponseDto()
     {
         var existingCustomerId = new Guid("1e7f7772-9c53-4e88-afa0-d785b3db9842");
-        var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
+        var idempotency = Guid.NewGuid();
+        var request = new CreateOrderRequest("Test order", new List<OrderItemRequest>()
         {
             new OrderItemRequest(1, OrderItemType.Test,
                 new JsonElement(), null)
-        }, false, existingCustomerId);
+        }, idempotency, false, existingCustomerId);
+
+        _mockRepository.Setup(x => x.GetDraftByIdempotencyAsync(idempotency, CancellationToken.None))
+            .ReturnsAsync(new OrderDraft { CustomerId = Guid.NewGuid(), IdempotencyKey = idempotency });
 
         _mockPaymentService.Setup(x =>
             x.CreatePaymentAsync(It.IsAny<string>(), It.IsAny<decimal>(), CancellationToken.None)).ReturnsAsync("link");
         _mockCalculator.Setup(x =>
             x.Calculate(It.IsAny<OrderItem>())).Returns(10m);
-        _mockRepository.Setup(x => x.CustomerExistsAsync(existingCustomerId, CancellationToken.None))
-            .ReturnsAsync(true);
-        var result = await _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None);
+        _mockRepository.Setup(x => x.GetCustomerByUserIdAsync(It.IsAny<Guid>(), CancellationToken.None))
+            .ReturnsAsync(new Customer{Id = existingCustomerId, Name = "1", Phone = "123456789"});
+        var result = await _service.CreateAsync(Guid.NewGuid(), UserRole.Manager, request, CancellationToken.None);
 
         Assert.NotNull(result.PaymentUrl);
         Assert.NotEmpty(result.PaymentUrl);
@@ -67,31 +71,40 @@ public class OrderServiceTests
     public async Task CreateOrder_ShouldThrow_WhenItemQuantityIsZero()
     {
         var existingCustomerId = new Guid("1e7f7772-9c53-4e88-afa0-d785b3db9842");
-        _mockRepository.Setup(x => x.CustomerExistsAsync(existingCustomerId, CancellationToken.None)).ReturnsAsync(true);
-        var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
+        _mockRepository.Setup(x => x.GetCustomerByUserIdAsync(It.IsAny<Guid>(), CancellationToken.None))
+            .ReturnsAsync(new Customer{Id = existingCustomerId, Name = "1", Phone = "123456789"});
+        var idempotency = Guid.NewGuid();
+        _mockRepository.Setup(x => x.GetDraftByIdempotencyAsync(idempotency, CancellationToken.None))
+            .ReturnsAsync(new OrderDraft { CustomerId = existingCustomerId, IdempotencyKey = idempotency });
+        var request = new CreateOrderRequest("Test order", new List<OrderItemRequest>()
         {
             new OrderItemRequest(0, OrderItemType.Test,
                 new JsonElement(), null)
-        }, true, existingCustomerId);
+        }, idempotency, true, existingCustomerId);
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None));
+            _service.CreateAsync(Guid.NewGuid(), UserRole.Manager, request, CancellationToken.None));
     }
 
-[Fact]
+    [Fact]
     public async Task CreateOrder_ShouldReturn_CustomerDoesntExists()
     {
-        var orderDto = new CreateOrderRequest("Test order", Guid.NewGuid(), new List<OrderItemRequest>()
+        var idempotency = Guid.NewGuid();
+        var request = new CreateOrderRequest("Test order", new List<OrderItemRequest>()
         {
             new OrderItemRequest(1, OrderItemType.Test,
                 new JsonElement(), null)
-        }, false, Guid.NewGuid());
+        }, idempotency, false, Guid.NewGuid());
 
         _mockCalculator.Setup(x =>
             x.Calculate(It.IsAny<OrderItemRequest>())).Returns(10m);
         _mockRepository.Setup(x => x.CustomerExistsAsync(It.IsAny<Guid>(), CancellationToken.None))
             .ReturnsAsync(false);
+
+        _mockRepository.Setup(x => x.GetDraftByIdempotencyAsync(idempotency, CancellationToken.None))
+            .ReturnsAsync(new OrderDraft { CustomerId = Guid.NewGuid(), IdempotencyKey = idempotency });
+
         await Assert.ThrowsAsync<CustomerDoesNotExistException>(() =>
-            _service.CreateAsync(Guid.NewGuid(), orderDto, CancellationToken.None));
+            _service.CreateAsync(Guid.NewGuid(), UserRole.Manager, request, CancellationToken.None));
     }
 }

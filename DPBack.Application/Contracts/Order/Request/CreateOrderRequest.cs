@@ -4,9 +4,9 @@ namespace DPBack.Application.Contracts
 {
     public record CreateOrderRequest(
         string Desc,
-        Guid CreatedBy,
         IReadOnlyCollection<OrderItemRequest> Items,
+        Guid IdempotencyKey,
         bool Paid,
-        Guid? CustomerId
+        Guid CustomerId
     );
 }

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DPBack.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderStoreDbContext))]
-    [Migration("20261001095208_AddPaymentSet")]
-    partial class AddPaymentSet
+    [Migration("20261109152706_AddDrafts")]
+    partial class AddDrafts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,22 +28,30 @@ namespace DPBack.Infrastructure.Migrations
             modelBuilder.HasSequence<int>("OrderNumbers")
                 .StartsAt(10001L);
 
-            modelBuilder.Entity("DPBack.Domain.Models.DeliveryTypeEntity", b =>
+            modelBuilder.Entity("DPBack.Domain.Models.OrderDraft", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("IdempotencyKey")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.ToTable("DeliveryOptions");
+                    b.HasIndex("CustomerId", "IdempotencyKey")
+                        .IsUnique();
+
+                    b.ToTable("OrderDrafts");
                 });
 
             modelBuilder.Entity("DPBack.Domain.Models.PaymentObject", b =>
@@ -72,49 +80,6 @@ namespace DPBack.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Payments");
-                });
-
-            modelBuilder.Entity("DPBack.Infrastructure.Entities.CustomerAddressEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ApartmentNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("BuildingNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("City")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Country")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Options")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PostalCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Street")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("CustomerAddresses");
                 });
 
             modelBuilder.Entity("DPBack.Infrastructure.Entities.CustomerEntity", b =>
@@ -154,58 +119,6 @@ namespace DPBack.Infrastructure.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AddressSnapshot")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AssignedTo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Descriprion")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsSuspended")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("OrderNumber")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValueSql("nextval('\"OrderNumbers\"')");
-
-                    b.Property<int>("PaymentStatus")
-                        .HasColumnType("integer");
-
-                    b.Property<uint>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid")
-                        .HasColumnName("xmin");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("TotalPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Orders");
-                });
-
             modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderHistoryElementEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -241,6 +154,7 @@ namespace DPBack.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Options")
+                        .HasMaxLength(100)
                         .HasColumnType("text");
 
                     b.Property<Guid>("OrderId")
@@ -284,20 +198,139 @@ namespace DPBack.Infrastructure.Migrations
                     b.ToTable("OrderReceiptTasks");
                 });
 
-            modelBuilder.Entity("DPBack.Infrastructure.Entities.CustomerAddressEntity", b =>
+            modelBuilder.Entity("DPBack.Infrastructure.Entities.Orders.CustomerAddressEntity", b =>
                 {
-                    b.HasOne("DPBack.Infrastructure.Entities.CustomerEntity", "Customer")
-                        .WithMany("Addresses")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
-                    b.Navigation("Customer");
+                    b.Property<string>("ApartmentNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("BuildingNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Options")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("PostalCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Street")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("CustomerAddresses");
+                });
+
+            modelBuilder.Entity("DPBack.Infrastructure.Entities.Orders.OrderEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AddressSnapshot")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("AssignedTo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Descriprion")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("DraftId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsSuspended")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OrderNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValueSql("nextval('\"OrderNumbers\"')");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<uint>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DraftId")
+                        .IsUnique();
+
+                    b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("DPBack.Infrastructure.Entities.Products.DeliveryTypeEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeliveryOptions");
                 });
 
             modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderHistoryElementEntity", b =>
                 {
-                    b.HasOne("DPBack.Infrastructure.Entities.OrderEntity", "Order")
+                    b.HasOne("DPBack.Infrastructure.Entities.Orders.OrderEntity", "Order")
                         .WithMany("History")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -308,7 +341,7 @@ namespace DPBack.Infrastructure.Migrations
 
             modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderItemEntity", b =>
                 {
-                    b.HasOne("DPBack.Infrastructure.Entities.OrderEntity", "Order")
+                    b.HasOne("DPBack.Infrastructure.Entities.Orders.OrderEntity", "Order")
                         .WithMany("Items")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -319,7 +352,7 @@ namespace DPBack.Infrastructure.Migrations
 
             modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderReceiptTaskEntity", b =>
                 {
-                    b.HasOne("DPBack.Infrastructure.Entities.OrderEntity", "Order")
+                    b.HasOne("DPBack.Infrastructure.Entities.Orders.OrderEntity", "Order")
                         .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -328,12 +361,23 @@ namespace DPBack.Infrastructure.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("DPBack.Infrastructure.Entities.Orders.CustomerAddressEntity", b =>
+                {
+                    b.HasOne("DPBack.Infrastructure.Entities.CustomerEntity", "Customer")
+                        .WithMany("Addresses")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("DPBack.Infrastructure.Entities.CustomerEntity", b =>
                 {
                     b.Navigation("Addresses");
                 });
 
-            modelBuilder.Entity("DPBack.Infrastructure.Entities.OrderEntity", b =>
+            modelBuilder.Entity("DPBack.Infrastructure.Entities.Orders.OrderEntity", b =>
                 {
                     b.Navigation("History");
 

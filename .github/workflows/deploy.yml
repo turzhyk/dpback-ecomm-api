@@ -9,9 +9,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+        if: vars.DISABLE_DEPLOY == 'true'
+        run: |
+          echo "Deployment is disabled. Skipping..."
+
       - name: Deploy to VPS
+        if: vars.DISABLE_DEPLOY != 'true'
         uses: appleboy/ssh-action@v1.2.0
+        
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER}}
