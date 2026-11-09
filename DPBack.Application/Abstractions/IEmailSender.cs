@@ -4,5 +4,5 @@ namespace DPBack.Application.Abstractions;
 
 public interface IEmailSender
 {
-    Task SendReceiptEmailAsync(string targetEmail, SmtpOptions options, byte[] receiptPdf, string filename, CancellationToken cToken);
+    Task SendReceiptEmailAsync(string targetEmail, byte[] receiptPdf, string filename, SmtpOptions options, CancellationToken cToken);
 }

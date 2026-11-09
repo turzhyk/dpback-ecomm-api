@@ -3,6 +3,7 @@ using DPBack.Application.Contracts;
 using DPBack.Application.Abstractions;
 using DPBack.Application.Contracts.Order.Response;
 using DPBack.Domain.Enums;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,10 @@ namespace DPBack.API.Controllers
 {
     [ApiController]
     [Route("orders")]
-    public class OrdersController(IOrdersService service, IReceiptService receiptService) : ControllerBase
+    public class OrdersController(
+        IOrdersService service,
+        IReceiptService receiptService
+       ) : ControllerBase
     {
         private Guid? GetCurrentUserId()
         {
@@ -34,11 +38,13 @@ namespace DPBack.API.Controllers
         
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<List<OrderResponse>>> GetOrdersFiltered([FromQuery]OrdersFilteredRequestDto request,CancellationToken cToken)
+        public async Task<ActionResult<List<OrderResponse>>> GetOrdersFiltered(
+            [FromQuery] OrdersFilteredRequestDto request, CancellationToken cToken)
         {
             var response = await service.GetFilteredAsync(request, cToken);
             return Ok(response);
         }
+
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<OrderResponse>> GetOrderById(Guid id, CancellationToken cToken)
@@ -46,13 +52,15 @@ namespace DPBack.API.Controllers
             var userId = GetCurrentUserId();
             if (userId is not Guid user)
                 throw new UnauthorizedAccessException();
-            
+
             var result = await service.GetByIdAsync(user, id, cToken);
             return Ok(result);
         }
+
         [HttpPatch("{id}/assigned")]
         [Authorize(Roles = "Admin, Worker")]
-        public async Task<ActionResult> AssignOrderToWorker(Guid id, [FromBody] AssignOrderRequest request, CancellationToken cToken)
+        public async Task<ActionResult> AssignOrderToWorker(Guid id, [FromBody] AssignOrderRequest request,
+            CancellationToken cToken)
         {
             await service.AssignToUserAsync(id, request.AuthorLogin, cToken);
             return Ok();
@@ -60,7 +68,8 @@ namespace DPBack.API.Controllers
 
         [HttpPatch("{id}/status")]
         [Authorize(Roles = "Admin, Worker")]
-        public async Task<ActionResult> ChangeOrderStatus(Guid id, [FromBody] ChangeOrderStatusRequest request, CancellationToken cToken)
+        public async Task<ActionResult> ChangeOrderStatus(Guid id, [FromBody] ChangeOrderStatusRequest request,
+            CancellationToken cToken)
         {
             var userId = GetCurrentUserId();
             if (userId is null)
@@ -75,19 +84,21 @@ namespace DPBack.API.Controllers
             throw new NotImplementedException();
         }
         [HttpPost]
-        public async Task<ActionResult<CreateOrderResponse>> CreateOrder([FromBody] CreateOrderRequest request, CancellationToken cToken)
+        public async Task<ActionResult<CreateOrderResponse>> CreateOrder([FromBody] CreateOrderRequest request,
+            CancellationToken cToken)
         {
             var userId = GetCurrentUserId();
-            var role = GetCurrentUserRole();
-            if (userId is null || role is null)
+            var userRole = GetCurrentUserRole();
+            if (userId is null)
                 return Unauthorized();
-          
-            var response = await service.CreateAsync(userId.GetValueOrDefault(), role.GetValueOrDefault(), request, cToken);
+            // var userId = GetCurrentUserId();
+            var response = await service.CreateAsync(userId.GetValueOrDefault(), userRole.GetValueOrDefault(), request, cToken);
             return Ok(response);
         }
 
         [HttpGet("{id}/paymentStatus")]
-        public async Task<ActionResult<GetOrderPaymentStatusResponse>> GetOrderPaymentStatus(Guid id, CancellationToken cToken)
+        public async Task<ActionResult<GetOrderPaymentStatusResponse>> GetOrderPaymentStatus(Guid id,
+            CancellationToken cToken)
         {
             // var userId = GetCurrentUserId();
             // var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
@@ -103,12 +114,13 @@ namespace DPBack.API.Controllers
             await service.SuspendOrderAsync(id, cToken);
             return Ok();
         }
+
         [HttpGet("{id}/receipt")]
-        public async Task<IActionResult> GetReceipt([FromRoute]Guid id, CancellationToken cToken)
+        public async Task<IActionResult> GetReceipt([FromRoute] Guid id, CancellationToken cToken)
         {
-            var result =await receiptService.GetReceiptFileAsync(id, cToken);
+            var result = await receiptService.GetReceiptFileAsync(id, cToken);
             var fileName = $"receipt_for_{id}.pdf";
-            return File(result, "application/pdf", fileName);
+            return File(result.pdf, "application/pdf", fileName);
         }
 
         [HttpGet("{id}/payment")]

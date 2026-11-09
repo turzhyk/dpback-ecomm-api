@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DPBack.Infrastructure.Migrations.UserStoreDb
 {
     /// <inheritdoc />
-    public partial class nitialreate : Migration
+    public partial class Initialreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

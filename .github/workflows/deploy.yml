@@ -4,19 +4,29 @@ on:
     branches:
       - main
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        if: vars.DISABLE_DEPLOY == 'true'
-        run: |
-          echo "Deployment is disabled. Skipping..."
-
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with: 
+          dotnet-version: 'v8.0.x'
+      
+      - name: Restore
+        run: dotnet restore
+      
+      - name: Tests
+        run: dotnet test --no-restore --verbosity normal
+  
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to VPS
-        if: vars.DISABLE_DEPLOY != 'true'
         uses: appleboy/ssh-action@v1.2.0
-        
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER}}

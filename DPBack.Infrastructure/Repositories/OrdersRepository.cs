@@ -146,8 +146,7 @@ namespace DPBack.Infrastructure.Repositories
                     CreatedAt = order.CreatedAt,
                     PaymentStatus = order.PaymentStatus,
                     AddressSnapshot = "",
-                    Status = order.Status,
-                    DraftId = order.DraftId
+                    Status = order.Status
                 };
                 await context.Orders.AddAsync(orderEntity, cToken);
                 await context.SaveChangesAsync(cToken);
@@ -302,14 +301,7 @@ namespace DPBack.Infrastructure.Repositories
             return customer;
         }
 
-        public async Task<Customer?> GetCustomerAsync(Guid id, CancellationToken cToken)
-        {
-            var entity = await context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cToken);
-            if (entity is null)
-                return null;
-            var customer = entity.ToModel();
-            return customer;
-        }
+
 
         public async Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken cToken)
         {
@@ -339,6 +331,13 @@ namespace DPBack.Infrastructure.Repositories
             return await context.Customers.AnyAsync(x => x.Phone == phone, cToken);
         }
 
+        public async Task<Customer?> GetCustomerAsync(Guid id, CancellationToken cToken)
+        {
+            var entity =  await context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cToken);
+            if (entity is null)
+                return null;
+            return entity.ToModel();
+        }
         public async Task<bool> CustomerExistsAsync(Guid id, CancellationToken cToken)
         {
             return await context.Customers.AnyAsync(x => x.Id == id, cToken);
@@ -373,6 +372,13 @@ namespace DPBack.Infrastructure.Repositories
             await context.SaveChangesAsync(cToken);
         }
 
+        public async Task<OrderReceiptTask?> GetOrderReceiptTaskAsync(Guid orderReceiptId, CancellationToken cToken)
+        {
+            var entity = await context.OrderReceiptTasks.FirstOrDefaultAsync(x => x.Id == orderReceiptId, cToken);
+            if (entity is null)
+                return null;
+            return new OrderReceiptTask{Id = entity.Id, Status = entity.Status, CreatedAt = entity.CreatedAt, OrderId = entity.OrderId};
+        }
         public async Task<List<Guid>> GetOrderReceiptTasksWithStatusAsync(OrderReceiptStatus status,
             CancellationToken cToken)
         {

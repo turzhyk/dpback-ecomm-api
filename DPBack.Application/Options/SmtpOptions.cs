@@ -7,4 +7,6 @@ public class SmtpOptions
     public required string Host { get; init; }
     public required int Port { get; init; }
     public required bool UseSsl { get; init; }
+    public string? SmtpKey { get; init; }
+    public string? Login { get; init; }
 }
